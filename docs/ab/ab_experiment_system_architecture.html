@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AB实验系统架构图</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .page {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+            padding: 32px;
+            page-break-after: always;
+        }
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .page-subtitle {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 24px;
+            padding-left: 36px;
+        }
+        .section-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            background: #2c3e50;
+            color: #fff;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        /* 系统总览 */
+        .system-overview {
+            display: flex;
+            gap: 20px;
+            align-items: stretch;
+        }
+        .platform-box {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            min-width: 180px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .platform-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #2c3e50;
+            text-align: center;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #dee2e6;
+        }
+        .platform-item {
+            background: #fff;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 10px 14px;
+            font-size: 13px;
+            text-align: center;
+            color: #495057;
+            font-weight: 500;
+        }
+        .arrow-right {
+            display: flex;
+            align-items: center;
+            color: #adb5bd;
+            font-size: 24px;
+        }
+
+        /* 架构流程 */
+        .arch-flow {
+            display: flex;
+            gap: 16px;
+            margin-top: 20px;
+            align-items: stretch;
+        }
+        .arch-module {
+            flex: 1;
+            background: #fff;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 16px;
+            position: relative;
+        }
+        .arch-module::after {
+            content: '→';
+            position: absolute;
+            right: -22px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #adb5bd;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .arch-module:last-child::after { display: none; }
+        .module-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .module-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+        }
+        .icon-bucket { background: #e74c3c; }
+        .icon-data { background: #3498db; }
+        .icon-storage { background: #f39c12; }
+        .icon-stats { background: #9b59b6; }
+        .module-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        .module-name-en {
+            font-size: 11px;
+            color: #adb5bd;
+            font-weight: 400;
+        }
+        .module-body {
+            font-size: 12px;
+            color: #495057;
+        }
+        .module-body li {
+            list-style: none;
+            padding: 4px 0;
+            padding-left: 12px;
+            position: relative;
+        }
+        .module-body li::before {
+            content: '▪';
+            position: absolute;
+            left: 0;
+            color: #adb5bd;
+        }
+
+        /* 数据管道详细 */
+        .data-pipeline-detail {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .pipeline-col {
+            flex: 1;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 14px;
+            border: 1px solid #e9ecef;
+        }
+        .pipeline-col-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #495057;
+            margin-bottom: 8px;
+            text-align: center;
+            padding-bottom: 6px;
+            border-bottom: 1px dashed #dee2e6;
+        }
+        .pipeline-item {
+            font-size: 11px;
+            color: #6c757d;
+            padding: 3px 0;
+        }
+        .tech-tag {
+            display: inline-block;
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            color: #495057;
+            margin-top: 4px;
+        }
+
+        /* 分流模型 */
+        .bucketing-section {
+            display: flex;
+            gap: 24px;
+        }
+        .bucketing-left {
+            flex: 1;
+        }
+        .bucketing-right {
+            flex: 1.5;
+        }
+        .code-block {
+            background: #1e1e2e;
+            color: #a6accd;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            line-height: 1.8;
+            margin-bottom: 16px;
+        }
+        .code-comment { color: #676e95; }
+        .code-keyword { color: #c792ea; }
+        .code-func { color: #82aaff; }
+        .code-string { color: #c3e88d; }
+        .code-num { color: #f78c6c; }
+
+        .layer-diagram {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 16px;
+            border: 1px solid #e9ecef;
+        }
+        .layer-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .layer-label {
+            width: 80px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #495057;
+            text-align: right;
+            padding-right: 10px;
+        }
+        .layer-bar {
+            flex: 1;
+            height: 36px;
+            display: flex;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .layer-segment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: #fff;
+        }
+        .seg-a { background: #3498db; }
+        .seg-b { background: #2ecc71; }
+        .seg-c { background: #e74c3c; }
+        .seg-ctrl { background: #95a5a6; }
+        .seg-d { background: #9b59b6; }
+
+        .domain-info {
+            display: flex;
+            gap: 16px;
+            margin-top: 12px;
+            font-size: 11px;
+            color: #6c757d;
+        }
+        .domain-tag {
+            background: #e9ecef;
+            padding: 4px 10px;
+            border-radius: 4px;
+        }
+
+        /* 指标体系 */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+        .metric-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 16px;
+            border: 2px solid #e9ecef;
+            position: relative;
+        }
+        .metric-card.north { border-color: #f39c12; background: #fffbeb; }
+        .metric-card.primary { border-color: #3498db; background: #ebf5fb; }
+        .metric-card.secondary { border-color: #2ecc71; background: #eafaf1; }
+        .metric-card.guard { border-color: #e74c3c; background: #fdedec; }
+        .metric-badge {
+            position: absolute;
+            top: -10px;
+            left: 12px;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .badge-north { background: #f39c12; }
+        .badge-primary { background: #3498db; }
+        .badge-secondary { background: #2ecc71; }
+        .badge-guard { background: #e74c3c; }
+        .metric-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin-top: 8px;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+        .metric-desc {
+            font-size: 12px;
+            color: #6c757d;
+            line-height: 1.6;
+        }
+        .metric-example {
+            font-size: 11px;
+            color: #888;
+            margin-top: 6px;
+            font-style: italic;
+        }
+
+        /* 统计检验流程 */
+        .stats-pipeline {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .stats-step {
+            display: flex;
+            gap: 16px;
+            align-items: stretch;
+        }
+        .step-box {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 16px;
+            flex: 1;
+            position: relative;
+        }
+        .step-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: #2c3e50;
+            color: #fff;
+            border-radius: 50%;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .step-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 6px;
+        }
+        .step-detail {
+            font-size: 12px;
+            color: #6c757d;
+            line-height: 1.6;
+        }
+        .step-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #adb5bd;
+            font-size: 20px;
+            padding: 0 8px;
+        }
+        .step-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #fff;
+            margin-left: 8px;
+        }
+        .badge-cuped { background: #9b59b6; }
+        .badge-msprt { background: #e74c3c; }
+
+        .output-box {
+            background: #1a1a2e;
+            color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 16px;
+        }
+        .output-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .output-items {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .output-item {
+            background: rgba(255,255,255,0.1);
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        /* 实验生命周期 */
+        .lifecycle-flow {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        .lifecycle-step {
+            text-align: center;
+            flex: 1;
+        }
+        .lifecycle-box {
+            background: #fff;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 12px 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 6px;
+        }
+        .lifecycle-box.active {
+            border-color: #3498db;
+            background: #ebf5fb;
+            color: #2980b9;
+        }
+        .lifecycle-en {
+            font-size: 10px;
+            color: #adb5bd;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .lifecycle-arrow {
+            color: #adb5bd;
+            font-size: 18px;
+        }
+
+        .target-banner {
+            background: #2c3e50;
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-top: 16px;
+            font-size: 13px;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        /* 数据存储层详细 */
+        .storage-detail {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .storage-card {
+            background: #fff;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+        .storage-icon {
+            font-size: 24px;
+            margin-bottom: 6px;
+        }
+        .storage-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        .storage-tech {
+            font-size: 11px;
+            color: #6c757d;
+            margin-top: 4px;
+        }
+        .storage-desc {
+            font-size: 10px;
+            color: #adb5bd;
+            margin-top: 4px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 1200px) {
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+            .arch-flow { flex-wrap: wrap; }
+            .bucketing-section { flex-direction: column; }
+        }
+        @media (max-width: 768px) {
+            .metrics-grid { grid-template-columns: 1fr; }
+            .storage-detail { grid-template-columns: repeat(2, 1fr); }
+            .lifecycle-flow { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 第一页：总体架构 -->
+        <div class="page">
+            <div class="page-title">
+                <span class="section-num">01</span>
+                系统总览 SYSTEM OVERVIEW
+            </div>
+            <div class="page-subtitle">AB实验系统 · 总体架构 v1.0 / 2026-04-27 · 百万DAU · 50+并行实验</div>
+
+            <div class="system-overview">
+                <div class="platform-box">
+                    <div class="platform-title">实验管理平台<br><small style="font-weight:400;color:#adb5bd;">WEB CONSOLE</small></div>
+                    <div class="platform-item">🧪 实验创建</div>
+                    <div class="platform-item">⚙️ 配置管理</div>
+                    <div class="platform-item">📊 报表看板</div>
+                    <div class="platform-item">🔐 权限控制</div>
+                    <div class="platform-item">📚 知识库</div>
+                </div>
+                <div class="arrow-right">→</div>
+                <div style="flex:1;">
+                    <div class="arch-flow">
+                        <div class="arch-module">
+                            <div class="module-header">
+                                <div class="module-icon icon-bucket">⚡</div>
+                                <div>
+                                    <div class="module-name">分流服务</div>
+                                    <div class="module-name-en">Bucketing Service</div>
+                                </div>
+                            </div>
+                            <div class="module-body">
+                                <li>MurmurHash3 哈希分桶</li>
+                                <li>域-层正交分流模型</li>
+                                <li>配置中心增量下发</li>
+                                <li>本地缓存 · 纯本地计算</li>
+                                <li>三端SDK (iOS/Android/Web)</li>
+                            </div>
+                        </div>
+                        <div class="arch-module">
+                            <div class="module-header">
+                                <div class="module-icon icon-data">📡</div>
+                                <div>
+                                    <div class="module-name">数据采集管道</div>
+                                    <div class="module-name-en">Data Pipeline</div>
+                                </div>
+                            </div>
+                            <div class="module-body">
+                                <li>埋点SDK · 自动注入实验标签</li>
+                                <li>统一事件Schema</li>
+                                <li>Flink 实时流 (分钟级)</li>
+                                <li>Spark 离线流 (T+1)</li>
+                                <li>去重 · 校验 · 时间校准</li>
+                            </div>
+                        </div>
+                        <div class="arch-module">
+                            <div class="module-header">
+                                <div class="module-icon icon-storage">💾</div>
+                                <div>
+                                    <div class="module-name">数据存储层</div>
+                                    <div class="module-name-en">DATA STORAGE</div>
+                                </div>
+                            </div>
+                            <div class="module-body">
+                                <li>实验配置库 MySQL</li>
+                                <li>事件消息队列 Kafka</li>
+                                <li>指标分析表 ClickHouse</li>
+                                <li>配置缓存 Redis</li>
+                            </div>
+                        </div>
+                        <div class="arch-module">
+                            <div class="module-header">
+                                <div class="module-icon icon-stats">📈</div>
+                                <div>
+                                    <div class="module-name">统计分析引擎</div>
+                                    <div class="module-name-en">Stats Engine</div>
+                                </div>
+                            </div>
+                            <div class="module-body">
+                                <li>SRM 分流校验</li>
+                                <li>Welch t检验 / z检验</li>
+                                <li>BH 多重检验校正</li>
+                                <li>CUPED 方差缩减</li>
+                                <li>mSPRT 序贯检验</li>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="storage-detail">
+                        <div class="storage-card">
+                            <div class="storage-icon">🗄️</div>
+                            <div class="storage-name">实验配置库</div>
+                            <div class="storage-tech">MySQL</div>
+                            <div class="storage-desc">配置持久化</div>
+                        </div>
+                        <div class="storage-card">
+                            <div class="storage-icon">📨</div>
+                            <div class="storage-name">事件消息队列</div>
+                            <div class="storage-tech">Kafka</div>
+                            <div class="storage-desc">实时事件流</div>
+                        </div>
+                        <div class="storage-card">
+                            <div class="storage-icon">📊</div>
+                            <div class="storage-name">指标分析表</div>
+                            <div class="storage-tech">ClickHouse</div>
+                            <div class="storage-desc">OLAP分析</div>
+                        </div>
+                        <div class="storage-card">
+                            <div class="storage-icon">⚡</div>
+                            <div class="storage-name">配置缓存</div>
+                            <div class="storage-tech">Redis</div>
+                            <div class="storage-desc">&lt; 3min 延迟</div>
+                        </div>
+                    </div>
+
+                    <div class="data-pipeline-detail" style="margin-top:16px;">
+                        <div class="pipeline-col">
+                            <div class="pipeline-col-title">实时流</div>
+                            <div class="pipeline-item">日志接收网关 Nginx/Go</div>
+                            <div class="pipeline-item">↓</div>
+                            <div class="pipeline-item">消息队列 Kafka</div>
+                            <div class="pipeline-item">↓</div>
+                            <div class="pipeline-item">Flink 实时流 <span class="tech-tag">分钟级聚合</span></div>
+                            <div class="pipeline-item">↓</div>
+                            <div class="pipeline-item">ClickHouse 实时指标表</div>
+                        </div>
+                        <div class="pipeline-col">
+                            <div class="pipeline-col-title">离线流</div>
+                            <div class="pipeline-item">客户端/服务端 SDK埋点上报</div>
+                            <div class="pipeline-item">↓</div>
+                            <div class="pipeline-item">消息队列 Kafka</div>
+                            <div class="pipeline-item">↓</div>
+                            <div class="pipeline-item">Spark 离线 <span class="tech-tag">T+1 全量计算</span></div>
+                            <div class="pipeline-item">↓</div>
+                            <div class="pipeline-item">ClickHouse 离线指标表</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第二页：分流模型 -->
+        <div class="page">
+            <div class="page-title">
+                <span class="section-num">03</span>
+                分流模型 BUCKETING MODEL
+            </div>
+            <div class="page-subtitle">哈希分桶算法 · 域-层正交分流</div>
+
+            <div class="bucketing-section">
+                <div class="bucketing-left">
+                    <div class="code-block">
+                        <span class="code-comment">// 分桶公式</span><br>
+                        <span class="code-keyword">bucket</span> = <span class="code-func">MurmurHash3</span>(<span class="code-string">user_id</span> + <span class="code-string">layer_id</span>) % <span class="code-num">10000</span><br><br>
+                        <span class="code-comment">// 桶总数: 10000 → 粒度 0.1%</span><br>
+                        <span class="code-comment">// 拼接 layer_id → 层间正交</span><br>
+                        <span class="code-comment">// 同一用户 → 同一桶号(粘性)</span>
+                    </div>
+
+                    <div style="background:#f8f9fa;border-radius:8px;padding:14px;border:1px solid #e9ecef;">
+                        <div style="font-size:13px;font-weight:700;color:#2c3e50;margin-bottom:10px;">分流特性</div>
+                        <div style="font-size:12px;color:#6c757d;line-height:2;">
+                            <div>✓ <strong>哈希分桶算法</strong>：MurmurHash3 高性能哈希</div>
+                            <div>✓ <strong>域-层正交分流</strong>：层间流量正交，实验互不干扰</div>
+                            <div>✓ <strong>配置中心增量下发</strong>：实时更新实验配置</div>
+                            <div>✓ <strong>本地缓存纯本地计算</strong>：&lt; 5ms 分桶延迟</div>
+                            <div>✓ <strong>三端SDK统一</strong>：iOS / Android / Web</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bucketing-right">
+                    <div class="layer-diagram">
+                        <div style="font-size:14px;font-weight:700;color:#2c3e50;margin-bottom:16px;text-align:center;">
+                            域-层正交分流示意
+                        </div>
+
+                        <div class="layer-row">
+                            <div class="layer-label">默认域<br><small style="color:#adb5bd;">90%流量</small></div>
+                            <div class="layer-bar">
+                                <div class="layer-segment seg-a" style="width:50%">推荐层<br>EXP-A 50%</div>
+                                <div class="layer-segment seg-ctrl" style="width:20%">CTRL<br>20%</div>
+                                <div class="layer-segment seg-b" style="width:30%">EXP-B<br>30%</div>
+                            </div>
+                        </div>
+                        <div style="font-size:11px;color:#adb5bd;text-align:center;margin:4px 0;">↑ 层间正交</div>
+
+                        <div class="layer-row">
+                            <div class="layer-label">UI层</div>
+                            <div class="layer-bar">
+                                <div class="layer-segment seg-c" style="width:30%">EXP-C<br>30%</div>
+                                <div class="layer-segment seg-ctrl" style="width:30%">CTRL<br>30%</div>
+                                <div style="width:40%;background:#f0f0f0;"></div>
+                            </div>
+                        </div>
+                        <div style="font-size:11px;color:#adb5bd;text-align:center;margin:4px 0;">↑ 层间正交</div>
+
+                        <div class="layer-row">
+                            <div class="layer-label">定价层</div>
+                            <div class="layer-bar">
+                                <div class="layer-segment seg-ctrl" style="width:40%">CTRL<br>40%</div>
+                                <div style="width:60%;background:#f0f0f0;"></div>
+                            </div>
+                        </div>
+
+                        <div style="border-top:2px dashed #dee2e6;margin:12px 0;"></div>
+
+                        <div class="layer-row">
+                            <div class="layer-label">独占域<br><small style="color:#adb5bd;">10%流量</small></div>
+                            <div class="layer-bar">
+                                <div class="layer-segment seg-d" style="width:10%">D<br>10%</div>
+                                <div style="width:90%;background:#f0f0f0;"></div>
+                            </div>
+                        </div>
+                        <div style="font-size:11px;color:#adb5bd;text-align:center;margin:4px 0;">↑ 域内互斥</div>
+                    </div>
+
+                    <div class="domain-info">
+                        <div class="domain-tag">🔄 层间正交</div>
+                        <div class="domain-tag">🚫 域内互斥</div>
+                        <div class="domain-tag">📌 用户粘性</div>
+                        <div class="domain-tag">⚡ &lt; 5ms 分桶</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第三页：指标体系 + 统计检验 -->
+        <div class="page">
+            <div class="page-title">
+                <span class="section-num">04</span>
+                指标体系 METRICS FRAMEWORK
+            </div>
+            <div class="page-subtitle">四层指标分类 · 科学实验评估体系</div>
+
+            <div class="metrics-grid">
+                <div class="metric-card north">
+                    <div class="metric-badge badge-north">NORTH STAR</div>
+                    <div class="metric-title">北极星指标</div>
+                    <div class="metric-desc">
+                        人均GMV<br>
+                        人均时长<br>
+                        所有实验默认观察
+                    </div>
+                </div>
+                <div class="metric-card primary">
+                    <div class="metric-badge badge-primary">PRIMARY</div>
+                    <div class="metric-title">实验主指标</div>
+                    <div class="metric-desc">
+                        每个实验仅一个核心指标<br>
+                        用于实验最终决策
+                    </div>
+                    <div class="metric-example">如：购买转化率</div>
+                </div>
+                <div class="metric-card secondary">
+                    <div class="metric-badge badge-secondary">SECONDARY</div>
+                    <div class="metric-title">辅助指标</div>
+                    <div class="metric-desc">
+                        加购率<br>
+                        浏览深度<br>
+                        需 BH 多重校正
+                    </div>
+                </div>
+                <div class="metric-card guard">
+                    <div class="metric-badge badge-guard">GUARDRAIL</div>
+                    <div class="metric-title">护栏指标</div>
+                    <div class="metric-desc">
+                        加载P90<br>
+                        崩溃率<br>
+                        单侧检验 · 不可恶化
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top:32px;">
+                <div class="page-title">
+                    <span class="section-num">05</span>
+                    统计检验流程 STATISTICAL TESTING PIPELINE
+                </div>
+                <div class="page-subtitle">CUPED 方差缩减 · mSPRT 序贯检验 · 科学决策引擎</div>
+
+                <div class="stats-pipeline">
+                    <div class="stats-step">
+                        <div class="step-box" style="flex:1;">
+                            <div class="step-num">01</div>
+                            <div class="step-title">SRM 检验</div>
+                            <div class="step-detail">
+                                卡方检验<br>
+                                验证分流比例是否符合预期<br>
+                                确保实验组对照组样本均衡
+                            </div>
+                        </div>
+                        <div class="step-arrow">→</div>
+                        <div class="step-box" style="flex:1.2;">
+                            <div class="step-num">02</div>
+                            <div class="step-title">主指标检验 <span class="step-badge badge-cuped">CUPED</span></div>
+                            <div class="step-detail">
+                                Welch t / z 检验<br>
+                                p值 + 置信区间<br>
+                                <strong>CUPED 方差缩减</strong>：利用实验前协变量降低噪音<br>
+                                缩短实验周期 <strong>20%-50%</strong>
+                            </div>
+                        </div>
+                        <div class="step-arrow">→</div>
+                        <div class="step-box" style="flex:1;">
+                            <div class="step-num">03</div>
+                            <div class="step-title">辅助指标校正</div>
+                            <div class="step-detail">
+                                Benjamini-Hochberg<br>
+                                FDR 控制<br>
+                                避免多重比较导致的假阳性
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stats-step">
+                        <div class="step-box" style="flex:1;">
+                            <div class="step-num">04</div>
+                            <div class="step-title">护栏指标检查 <span class="step-badge badge-msprt">mSPRT</span></div>
+                            <div class="step-detail">
+                                单侧检验 · 恶化告警<br>
+                                <strong>mSPRT 序贯检验</strong>：持续监测，支持早停决策<br>
+                                控制整体假阳性率
+                            </div>
+                        </div>
+                        <div class="step-arrow">→</div>
+                        <div class="output-box" style="flex:2;">
+                            <div class="output-title">📋 OUTPUT 实验报告</div>
+                            <div class="output-items">
+                                <div class="output-item">📊 Lift 提升幅度</div>
+                                <div class="output-item">📏 CI 置信区间</div>
+                                <div class="output-item">🎯 p值 统计显著性</div>
+                                <div class="output-item">📈 时间趋势</div>
+                                <div class="output-item">👥 人群拆分</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第四页：实验生命周期 + 架构规格 -->
+        <div class="page">
+            <div class="page-title">
+                <span class="section-num">06</span>
+                实验生命周期 EXPERIMENT LIFECYCLE
+            </div>
+            <div class="page-subtitle">全生命周期管理 · 从草稿到归档</div>
+
+            <div class="lifecycle-flow">
+                <div class="lifecycle-step">
+                    <div class="lifecycle-box">📝 草稿</div>
+                    <div class="lifecycle-en">DRAFT</div>
+                </div>
+                <div class="lifecycle-arrow">→</div>
+                <div class="lifecycle-step">
+                    <div class="lifecycle-box">🔍 审批</div>
+                    <div class="lifecycle-en">REVIEW</div>
+                </div>
+                <div class="lifecycle-arrow">→</div>
+                <div class="lifecycle-step">
+                    <div class="lifecycle-box">🚀 灰度<br><small style="color:#e74c3c;">1%-10%</small></div>
+                    <div class="lifecycle-en">RAMP</div>
+                </div>
+                <div class="lifecycle-arrow">→</div>
+                <div class="lifecycle-step">
+                    <div class="lifecycle-box active">▶️ 运行中</div>
+                    <div class="lifecycle-en">RUNNING</div>
+                </div>
+                <div class="lifecycle-arrow">→</div>
+                <div class="lifecycle-step">
+                    <div class="lifecycle-box">📊 分析</div>
+                    <div class="lifecycle-en">ANALYZING</div>
+                </div>
+                <div class="lifecycle-arrow">→</div>
+                <div class="lifecycle-step">
+                    <div class="lifecycle-box">🎯 决策<br><small>全量/迭代/回滚</small></div>
+                    <div class="lifecycle-en">DECISION</div>
+                </div>
+                <div class="lifecycle-arrow">→</div>
+                <div class="lifecycle-step">
+                    <div class="lifecycle-box">📦 归档</div>
+                    <div class="lifecycle-en">ARCHIVE</div>
+                </div>
+            </div>
+
+            <div class="target-banner">
+                🎯 TARGET: 1M DAU · 50+ CONCURRENT EXPERIMENTS · T+1 ANALYSIS · &lt;5ms BUCKETING
+            </div>
+
+            <div style="margin-top:40px;">
+                <div class="page-title">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:#e74c3c;color:#fff;border-radius:6px;font-size:14px;font-weight:600;margin-right:12px;">📋</span>
+                    架构规格 ARCHITECTURE SPECIFICATION
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px;">
+                    <div style="background:#f8f9fa;border-radius:10px;padding:20px;border:1px solid #e9ecef;text-align:center;">
+                        <div style="font-size:32px;margin-bottom:8px;">👥</div>
+                        <div style="font-size:24px;font-weight:700;color:#2c3e50;">1M</div>
+                        <div style="font-size:13px;color:#6c757d;margin-top:4px;">DAU 日活跃用户</div>
+                    </div>
+                    <div style="background:#f8f9fa;border-radius:10px;padding:20px;border:1px solid #e9ecef;text-align:center;">
+                        <div style="font-size:32px;margin-bottom:8px;">🧪</div>
+                        <div style="font-size:24px;font-weight:700;color:#2c3e50;">50+</div>
+                        <div style="font-size:13px;color:#6c757d;margin-top:4px;">并行实验数</div>
+                    </div>
+                    <div style="background:#f8f9fa;border-radius:10px;padding:20px;border:1px solid #e9ecef;text-align:center;">
+                        <div style="font-size:32px;margin-bottom:8px;">⚡</div>
+                        <div style="font-size:24px;font-weight:700;color:#2c3e50;">&lt;5ms</div>
+                        <div style="font-size:13px;color:#6c757d;margin-top:4px;">分桶延迟</div>
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px;">
+                    <div style="background:#f8f9fa;border-radius:10px;padding:20px;border:1px solid #e9ecef;text-align:center;">
+                        <div style="font-size:32px;margin-bottom:8px;">⏱️</div>
+                        <div style="font-size:24px;font-weight:700;color:#2c3e50;">T+1</div>
+                        <div style="font-size:13px;color:#6c757d;margin-top:4px;">离线分析时效</div>
+                    </div>
+                    <div style="background:#f8f9fa;border-radius:10px;padding:20px;border:1px solid #e9ecef;text-align:center;">
+                        <div style="font-size:32px;margin-bottom:8px;">📊</div>
+                        <div style="font-size:24px;font-weight:700;color:#2c3e50;">分钟级</div>
+                        <div style="font-size:13px;color:#6c757d;margin-top:4px;">实时指标聚合</div>
+                    </div>
+                    <div style="background:#f8f9fa;border-radius:10px;padding:20px;border:1px solid #e9ecef;text-align:center;">
+                        <div style="font-size:32px;margin-bottom:8px;">🎯</div>
+                        <div style="font-size:24px;font-weight:700;color:#2c3e50;">0.1%</div>
+                        <div style="font-size:13px;color:#6c757d;margin-top:4px;">分桶粒度</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

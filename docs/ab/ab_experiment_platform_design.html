@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AB实验管理平台设计</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 30px; }
+
+        .page {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+            padding: 32px;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 24px;
+        }
+
+        h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 28px 0 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        h2::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: #3498db;
+            border-radius: 2px;
+        }
+
+        h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #34495e;
+            margin: 20px 0 12px;
+        }
+
+        h4 {
+            font-size: 13px;
+            font-weight: 700;
+            color: #495057;
+            margin: 16px 0 8px;
+        }
+
+        p { margin-bottom: 10px; color: #555; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 12px;
+        }
+        th {
+            background: #f8f9fa;
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid #dee2e6;
+        }
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e9ecef;
+            color: #555;
+        }
+        tr:hover td { background: #f8f9fa; }
+
+        .lifecycle-flow {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin: 16px 0;
+            overflow-x: auto;
+        }
+        .lifecycle-step {
+            text-align: center;
+            flex: 1;
+            min-width: 80px;
+        }
+        .lifecycle-box {
+            background: #fff;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 12px 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 6px;
+        }
+        .lifecycle-box.active {
+            border-color: #3498db;
+            background: #ebf5fb;
+            color: #2980b9;
+        }
+        .lifecycle-box.warning {
+            border-color: #f39c12;
+            background: #fffbeb;
+        }
+        .lifecycle-box.danger {
+            border-color: #e74c3c;
+            background: #fdedec;
+        }
+        .lifecycle-box.success {
+            border-color: #2ecc71;
+            background: #eafaf1;
+        }
+        .lifecycle-en {
+            font-size: 9px;
+            color: #adb5bd;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .lifecycle-arrow {
+            color: #adb5bd;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            color: #fff;
+        }
+        .badge-blue { background: #3498db; }
+        .badge-green { background: #2ecc71; }
+        .badge-red { background: #e74c3c; }
+        .badge-yellow { background: #f39c12; }
+        .badge-gray { background: #95a5a6; }
+        .badge-purple { background: #9b59b6; }
+
+        .check-list {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 12px 0;
+        }
+        .check-list li {
+            list-style: none;
+            padding: 4px 0;
+            padding-left: 24px;
+            position: relative;
+            font-size: 12px;
+        }
+        .check-list li::before {
+            content: '☐';
+            position: absolute;
+            left: 0;
+            color: #adb5bd;
+        }
+
+        .code-block {
+            background: #1e1e2e;
+            color: #a6accd;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 11px;
+            line-height: 1.8;
+            margin: 12px 0;
+            overflow-x: auto;
+        }
+
+        .panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 16px;
+            margin: 12px 0;
+            border: 1px solid #e9ecef;
+        }
+        .panel-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 14px;
+            border: 1px solid #e9ecef;
+        }
+        .card-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        .card-desc {
+            font-size: 11px;
+            color: #6c757d;
+            line-height: 1.6;
+        }
+
+        .permission-matrix {
+            font-size: 10px;
+            overflow-x: auto;
+        }
+        .permission-matrix th,
+        .permission-matrix td {
+            padding: 6px 8px;
+            text-align: center;
+        }
+        .permission-matrix th:first-child,
+        .permission-matrix td:first-child {
+            text-align: left;
+            font-weight: 600;
+        }
+        .perm-yes { color: #2ecc71; font-weight: bold; }
+        .perm-no { color: #e74c3c; }
+        .perm-limited { color: #f39c12; }
+
+        .flow-chart {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 11px;
+            line-height: 2;
+            color: #555;
+        }
+
+        .metric-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 14px;
+            border-left: 3px solid #3498db;
+        }
+        .metric-card.green { border-left-color: #2ecc71; }
+        .metric-card.red { border-left-color: #e74c3c; }
+        .metric-card.yellow { border-left-color: #f39c12; }
+        .metric-card.purple { border-left-color: #9b59b6; }
+
+        .dashboard-preview {
+            background: #2c3e50;
+            color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 16px 0;
+        }
+        .dashboard-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .dashboard-item {
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+        .dashboard-num {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .dashboard-label {
+            font-size: 10px;
+            color: rgba(255,255,255,0.7);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 概述 -->
+        <div class="page">
+            <h1>AB实验管理平台设计</h1>
+            <div class="subtitle">v1.0 / 2026-05-05 · 一站式实验管理能力</div>
+
+            <div class="panel">
+                <div class="panel-title">🎯 平台定位</div>
+                <p>实验管理平台是AB实验系统的<strong>中枢控制台</strong>，连接分流SDK、数据采集管道、统计分析引擎，为业务方提供从实验创建到决策归档的<strong>一站式实验管理能力</strong>。</p>
+            </div>
+
+            <div class="grid-4" style="margin-top:16px;">
+                <div class="card">
+                    <div class="card-title">🚪 降低实验门槛</div>
+                    <div class="card-desc">非技术用户也能自助创建、运行、分析实验</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">🛡️ 保障实验质量</div>
+                    <div class="card-desc">内置SRM校验、统计功效计算、护栏监控等质量门禁</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">⚡ 提升决策效率</div>
+                    <div class="card-desc">自动化报告生成、智能决策建议、一键全量/回滚</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">📚 沉淀实验知识</div>
+                    <div class="card-desc">实验知识库、经验复用、组织级实验文化积累</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 实验全生命周期 -->
+        <div class="page">
+            <h2>实验全生命周期管理</h2>
+
+            <div class="lifecycle-flow">
+                <div class="lifecycle-step">
+                    <div class="lifecycle-box">📝<br>草稿</div>
+                    <div class="lifecycle-en">DRAFT</div>
+                </div>
+                <div class="lifecycle-arrow">→</div>
+                <div class="lifecycle-step">
+                    <div class="lifecycle-box warning">🔍<br>审批</div>
+                    <div class="lifecycle-en">REVIEW</div>
+                </div>
+                <div class="lifecycle-arrow">→</div>
+                <div class="lifecycle-step">
+                    <div class="lifecycle-box">🚀<br>灰度<br><span style="font-size:9px;color:#f39c12;">1%-10%</span></div>
+                    <div class="lifecycle-en">RAMP</div>
+                </div>
+                <div class="lifecycle-arrow">→</div>
+                <div class="lifecycle-step">
+                    <div class="lifecycle-box active">▶️<br>运行中</div>
+                    <div class="lifecycle-en">RUNNING</div>
+                </div>
+                <div class="lifecycle-arrow">→</div>
+                <div class="lifecycle-step">
+                    <div class="lifecycle-box">📊<br>分析</div>
+                    <div class="lifecycle-en">ANALYZING</div>
+                </div>
+                <div class="lifecycle-arrow">→</div>
+                <div class="lifecycle-step">
+                    <div class="lifecycle-box">🎯<br>决策</div>
+                    <div class="lifecycle-en">DECISION</div>
+                </div>
+                <div class="lifecycle-arrow">→</div>
+                <div class="lifecycle-step">
+                    <div class="lifecycle-box success">✅<br>全量</div>
+                    <div class="lifecycle-en">FULL</div>
+                </div>
+                <div class="lifecycle-arrow">→</div>
+                <div class="lifecycle-step">
+                    <div class="lifecycle-box danger">📦<br>归档</div>
+                    <div class="lifecycle-en">ARCHIVE</div>
+                </div>
+            </div>
+
+            <h3>各阶段详细设计</h3>
+
+            <div class="grid-2">
+                <div class="metric-card">
+                    <div style="font-size:12px;font-weight:700;color:#2c3e50;margin-bottom:8px;">
+                        <span class="badge badge-blue">草稿</span> DRAFT
+                    </div>
+                    <div style="font-size:11px;color:#555;line-height:1.7;">
+                        <strong>核心操作:</strong> 实验设计、流量配置、指标配置、版本配置<br>
+                        <strong>自动校验:</strong> 名称唯一性、流量比例合法性、指标注册检查、最小样本量预估<br>
+                        <strong>协作:</strong> 支持多人协作编辑，随时保存
+                    </div>
+                </div>
+                <div class="metric-card yellow">
+                    <div style="font-size:12px;font-weight:700;color:#2c3e50;margin-bottom:8px;">
+                        <span class="badge badge-yellow">审批</span> REVIEW
+                    </div>
+                    <div style="font-size:11px;color:#555;line-height:1.7;">
+                        <strong>审批链:</strong> 直属Leader → 数据科学家 → 平台管理员<br>
+                        <strong>检查清单:</strong> 业务合理性、统计功效、流量冲突、护栏指标、伦理合规<br>
+                        <strong>结果:</strong> 全部通过→灰度 / 任一驳回→退回草稿
+                    </div>
+                </div>
+                <div class="metric-card purple">
+                    <div style="font-size:12px;font-weight:700;color:#2c3e50;margin-bottom:8px;">
+                        <span class="badge badge-purple">灰度</span> RAMP
+                    </div>
+                    <div style="font-size:11px;color:#555;line-height:1.7;">
+                        <strong>三阶段:</strong> 1%(2h)→5%(4h)→10%(12h)<br>
+                        <strong>自动门禁:</strong> SRM检验、崩溃率、核心流程错误率<br>
+                        <strong>观察重点:</strong> 护栏指标趋势、主指标方向、样本均衡性
+                    </div>
+                </div>
+                <div class="metric-card green">
+                    <div style="font-size:12px;font-weight:700;color:#2c3e50;margin-bottom:8px;">
+                        <span class="badge badge-green">运行中</span> RUNNING
+                    </div>
+                    <div style="font-size:11px;color:#555;line-height:1.7;">
+                        <strong>实时监控:</strong> 主/辅/护栏指标趋势看板<br>
+                        <strong>自动告警:</strong> 护栏恶化、SRM异常、样本不足<br>
+                        <strong>自动操作:</strong> 护栏p<0.01→暂停 / 样本达标→可分析通知
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-2" style="margin-top:12px;">
+                <div class="metric-card">
+                    <div style="font-size:12px;font-weight:700;color:#2c3e50;margin-bottom:8px;">
+                        <span class="badge badge-blue">分析</span> ANALYZING
+                    </div>
+                    <div style="font-size:11px;color:#555;line-height:1.7;">
+                        <strong>自动报告:</strong> 实验摘要、主/辅/护栏指标结果、时间趋势、人群拆分<br>
+                        <strong>智能建议:</strong> 统计显著且正向→全量 / 显著负向→回滚 / 不显著→延长或迭代
+                    </div>
+                </div>
+                <div class="metric-card red">
+                    <div style="font-size:12px;font-weight:700;color:#2c3e50;margin-bottom:8px;">
+                        <span class="badge badge-red">决策</span> DECISION
+                    </div>
+                    <div style="font-size:11px;color:#555;line-height:1.7;">
+                        <strong>全量发布:</strong> 效果显著正向，推广全部用户（需管理层审批）<br>
+                        <strong>迭代优化:</strong> 有效果可优化，生成迭代草稿<br>
+                        <strong>回滚下线:</strong> 效果不显著或负向，恢复对照组<br>
+                        <strong>延长实验:</strong> 样本不足，需数据科学家确认
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 核心功能模块 -->
+        <div class="page">
+            <h2>核心功能模块</h2>
+
+            <h3>实验管理模块</h3>
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title">📋 实验列表</div>
+                    <div class="card-desc">
+                        多维度筛选（状态/时间/Owner/指标/业务线）<br>
+                        排序（创建时间/样本量/Lift）<br>
+                        批量操作、收藏关注、快速克隆
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">📄 实验详情页</div>
+                    <div class="card-desc">
+                        基本信息 + 流量配置 + 实时监控看板<br>
+                        统计报告Tab页（主指标/辅助指标/护栏指标/人群拆分）<br>
+                        操作日志 + 审批链 + 关联实验
+                    </div>
+                </div>
+            </div>
+
+            <h3>指标管理模块</h3>
+            <div class="grid-3">
+                <div class="card">
+                    <div class="card-title">📝 指标注册中心</div>
+                    <div class="card-desc">
+                        指标注册申请 → 数据团队审核<br>
+                        指标版本管理、指标血缘追踪
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">🏷️ 指标分类</div>
+                    <div class="card-desc">
+                        北极星指标（组织级）<br>
+                        实验主指标（实验级）<br>
+                        辅助指标 / 护栏指标
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">📊 指标计算</div>
+                    <div class="card-desc">
+                        CTR / CVR / CPU / 人均GMV<br>
+                        停留时长 / 留存率<br>
+                        统一计算口径、SQL模板
+                    </div>
+                </div>
+            </div>
+
+            <h3>流量管理模块</h3>
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title">🗺️ 流量地图</div>
+                    <div class="card-desc">
+                        可视化流量分配比例<br>
+                        域/层/实验三级树状展示<br>
+                        实时流量占用状态
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">⚠️ 冲突检测</div>
+                    <div class="card-desc">
+                        同层冲突（重叠桶号）→ 禁止发布<br>
+                        跨层正交校验 → 系统自动保证<br>
+                        流量溢出告警 → 自动限制
+                    </div>
+                </div>
+            </div>
+
+            <h3>报表看板模块</h3>
+            <div class="dashboard-preview">
+                <div class="dashboard-title">📊 实验全局仪表盘</div>
+                <div class="dashboard-grid">
+                    <div class="dashboard-item">
+                        <div class="dashboard-num">23</div>
+                        <div class="dashboard-label">运行中</div>
+                    </div>
+                    <div class="dashboard-item">
+                        <div class="dashboard-num">12</div>
+                        <div class="dashboard-label">本周完成</div>
+                    </div>
+                    <div class="dashboard-item">
+                        <div class="dashboard-num">8</div>
+                        <div class="dashboard-label">本月显著</div>
+                    </div>
+                    <div class="dashboard-item">
+                        <div class="dashboard-num">156</div>
+                        <div class="dashboard-label">累计实验</div>
+                    </div>
+                    <div class="dashboard-item">
+                        <div class="dashboard-num">34%</div>
+                        <div class="dashboard-label">成功率</div>
+                    </div>
+                </div>
+            </div>
+
+            <h3>知识库模块</h3>
+            <div class="grid-3">
+                <div class="card">
+                    <div class="card-title">📚 实验百科</div>
+                    <div class="card-desc">归档实验自动生成百科卡片，包含假设、结果、结论</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">🏷️ 经验标签</div>
+                    <div class="card-desc">人工标注实验经验，如"UI改动通常影响小"、"价格敏感"</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">🔄 实验复用</div>
+                    <div class="card-desc">模板市场、快速克隆、参数继承</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 权限模型 -->
+        <div class="page">
+            <h2>权限模型设计</h2>
+
+            <h3>RBAC基础角色</h3>
+            <table>
+                <tr>
+                    <th>角色</th>
+                    <th>职责</th>
+                    <th>典型用户</th>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-red">超级管理员</span></td>
+                    <td>平台配置、用户管理、全局权限分配</td>
+                    <td>平台负责人</td>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-purple">平台管理员</span></td>
+                    <td>指标审核、实验备案、全局监控</td>
+                    <td>数据平台团队</td>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-blue">数据科学家</span></td>
+                    <td>实验统计方案审核、复杂分析支持</td>
+                    <td>数据科学团队</td>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-yellow">部门管理员</span></td>
+                    <td>本部门用户管理、实验审批</td>
+                    <td>业务线负责人</td>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-green">产品经理</span></td>
+                    <td>实验创建、灰度监控、迭代优化</td>
+                    <td>产品经理</td>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-gray">数据分析师</span></td>
+                    <td>实验分析、报告生成、洞察挖掘</td>
+                    <td>数据分析师</td>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-gray">工程师</span></td>
+                    <td>实验版本开发、SDK集成、技术配置</td>
+                    <td>研发工程师</td>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-blue">管理层</span></td>
+                    <td>全量/回滚决策、全局看板查看</td>
+                    <td>业务负责人</td>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-gray">访客</span></td>
+                    <td>只读查看实验列表和公开报告</td>
+                    <td>新入职/跨部门</td>
+                </tr>
+            </table>
+
+            <h3>权限矩阵（核心功能）</h3>
+            <div class="permission-matrix">
+                <table>
+                    <tr>
+                        <th>功能</th>
+                        <th>超管</th>
+                        <th>平台</th>
+                        <th>科学家</th>
+                        <th>部门</th>
+                        <th>产品</th>
+                        <th>分析师</th>
+                        <th>工程师</th>
+                        <th>管理</th>
+                        <th>访客</th>
+                    </tr>
+                    <tr><td style="text-align:left;font-weight:600;">创建草稿</td><td class="perm-yes">✓</td><td class="perm-yes">✓</td><td class="perm-yes">✓</td><td class="perm-yes">✓</td><td class="perm-yes">✓</td><td class="perm-yes">✓</td><td class="perm-yes">✓</td><td class="perm-yes">✓</td><td class="perm-no">✗</td></tr>
+                    <tr><td style="text-align:left;font-weight:600;">编辑草稿</td><td class="perm-yes">✓</td><td class="perm-yes">✓</td><td class="perm-yes">✓</td><td class="perm-yes">✓</td><td class="perm-limited">自己</td><td class="perm-limited">自己</td><td class="perm-limited">自己</td><td class="perm-no">✗</td><td class="perm-no">✗</td></tr>
+                    <tr><td style="text-align:left;font-weight:600;">审批实验</td><td class="perm-yes">✓</td><td class="perm-yes">✓</td><td class="perm-yes">✓</td><td class="perm-yes">✓</td><td class="perm-no">✗</td><td class="perm-no">✗</td><td class="perm-no">✗</td><td class="perm-no">✗</td><td class="perm-no">✗</td></tr>
+                    <tr><td style="text-align:left;font-weight:600;">全量/回滚</td><td class="perm-yes">✓</td><td class="perm-yes">✓</td><td class="perm-no">✗</td><td class="perm-no">✗</td><td class="perm-no">✗</td><td class="perm-no">✗</td><td class="perm-no">✗</td><td class="perm-yes">✓</td><td class="perm-no">✗</td></tr>
+                    <tr><td style="text-align:left;font-weight:600;">下载原始数据</td><td class="perm-yes">✓</td><td class="perm-yes">✓</td><td class="perm-yes">✓</td><td class="perm-yes">✓</td><td class="perm-no">✗</td><td class="perm-yes">✓</td><td class="perm-no">✗</td><td class="perm-no">✗</td><td class="perm-no">✗</td></tr>
+                    <tr><td style="text-align:left;font-weight:600;">指标注册审核</td><td class="perm-yes">✓</td><td class="perm-yes">✓</td><td class="perm-yes">✓</td><td class="perm-no">✗</td><td class="perm-no">✗</td><td class="perm-no">✗</td><td class="perm-no">✗</td><td class="perm-no">✗</td><td class="perm-no">✗</td></tr>
+                    <tr><td style="text-align:left;font-weight:600;">用户权限管理</td><td class="perm-yes">✓</td><td class="perm-limited">本部门</td><td class="perm-no">✗</td><td class="perm-limited">本部门</td><td class="perm-no">✗</td><td class="perm-no">✗</td><td class="perm-no">✗</td><td class="perm-no">✗</td><td class="perm-no">✗</td></tr>
+                </table>
+            </div>
+
+            <h3>ABAC动态权限</h3>
+            <div class="grid-3">
+                <div class="card">
+                    <div class="card-title">🏢 业务线属性</div>
+                    <div class="card-desc">电商/金融/内容，只能查看本业务线实验</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">🔒 数据敏感度</div>
+                    <div class="card-desc">公开/内部/机密，机密实验仅特定角色可见</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">📊 实验状态</div>
+                    <div class="card-desc">草稿仅参与人可见，归档后公开</div>
+                </div>
+            </div>
+
+            <h3>审批流配置</h3>
+            <table>
+                <tr>
+                    <th>实验类型</th>
+                    <th>审批链</th>
+                    <th>说明</th>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-green">常规实验</span></td>
+                    <td>直属Leader → 数据科学家</td>
+                    <td>标准流程</td>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-yellow">高风险实验</span></td>
+                    <td>直属Leader → 数据科学家 → 部门负责人</td>
+                    <td>涉及核心流程或大额流量</td>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-red">全站实验</span></td>
+                    <td>直属Leader → 数据科学家 → 部门负责人 → 平台管理员</td>
+                    <td>影响全站用户体验</td>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-gray">紧急实验</span></td>
+                    <td>事后补审批（24小时内）</td>
+                    <td>线上故障修复等紧急场景</td>
+                </tr>
+            </table>
+
+            <h3>审计与合规</h3>
+            <div class="grid-3">
+                <div class="card">
+                    <div class="card-title">📝 权限变更</div>
+                    <div class="card-desc">谁、何时、变更了什么权限<br>保留3年</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">🔍 实验操作</div>
+                    <div class="card-desc">谁、何时、对哪个实验做了什么<br>与实验生命周期一致</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">📥 数据下载</div>
+                    <div class="card-desc">谁、何时、下载了什么数据<br>保留3年</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
