@@ -175,11 +175,16 @@ backend/victor-ab/
 ├── victor-domain/              # 领域模型：实体、DTO、事件
 ├── victor-bucketing/           # 分桶引擎：流量分配算法
 ├── victor-infrastructure/      # 基础设施：数据访问、缓存、迁移
+│   └── src/main/resources/db/migration/  # Flyway 迁移脚本
 ├── victor-service/             # 业务服务：实验、分桶、统计服务
 ├── victor-sdk/                 # 客户端SDK：Java SDK
 ├── victor-pipeline/            # 数据管道：Kafka消费、ClickHouse写入
 ├── victor-stats/               # 统计引擎：统计算法和模型
-└── victor-web/                 # Web层：REST API控制器
+├── victor-web/                 # Web层：REST API控制器
+└── scripts/                    # 数据库脚本
+    ├── seed/                   # 种子数据
+    ├── maintenance/            # 运维脚本
+    └── examples/               # 示例脚本
 ```
 
 ---

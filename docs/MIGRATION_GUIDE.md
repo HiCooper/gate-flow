@@ -99,7 +99,7 @@ A: 不会。Git 能够识别文件重命名，历史记录保持完整。使用 
 
 基于此次重命名，建议继续优化：
 
-1. **整理 SQL 文件** - 将散落的 `.sql` 文件归类到 `backend/victor/scripts/`
+1. **✅ 整理 SQL 文件** - 已将散落的 `.sql` 文件归类到 `backend/victor-ab/scripts/`
 2. **统一后端命名** - 考虑将 `backend/victor-ab` 简化为 `backend/victor`
 3. **基础设施集中** - 创建 `infra/` 目录统一管理 Docker 配置
 
