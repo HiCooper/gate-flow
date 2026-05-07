@@ -1,0 +1,119 @@
+{
+  "": {
+    "swift-dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/master.swiftdeps"
+  },
+  "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/Sources/GateFlowKit/Analytics/EventTracker.swift": {
+    "dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Analytics/EventTracker.d",
+    "object": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Analytics/EventTracker.swift.o",
+    "swiftmodule": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Analytics/EventTracker~partial.swiftmodule",
+    "swift-dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Analytics/EventTracker.swiftdeps"
+  },
+  "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/Sources/GateFlowKit/Config/ConfigManager.swift": {
+    "dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Config/ConfigManager.d",
+    "object": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Config/ConfigManager.swift.o",
+    "swiftmodule": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Config/ConfigManager~partial.swiftmodule",
+    "swift-dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Config/ConfigManager.swiftdeps"
+  },
+  "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/Sources/GateFlowKit/Config/ConfigurationStatus.swift": {
+    "dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Config/ConfigurationStatus.d",
+    "object": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Config/ConfigurationStatus.swift.o",
+    "swiftmodule": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Config/ConfigurationStatus~partial.swiftmodule",
+    "swift-dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Config/ConfigurationStatus.swiftdeps"
+  },
+  "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/Sources/GateFlowKit/Delegate/GateFlowDelegate.swift": {
+    "dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Delegate/GateFlowDelegate.d",
+    "object": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Delegate/GateFlowDelegate.swift.o",
+    "swiftmodule": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Delegate/GateFlowDelegate~partial.swiftmodule",
+    "swift-dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Delegate/GateFlowDelegate.swiftdeps"
+  },
+  "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/Sources/GateFlowKit/Dependencies/DependencyContainer.swift": {
+    "dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Dependencies/DependencyContainer.d",
+    "object": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Dependencies/DependencyContainer.swift.o",
+    "swiftmodule": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Dependencies/DependencyContainer~partial.swiftmodule",
+    "swift-dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Dependencies/DependencyContainer.swiftdeps"
+  },
+  "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/Sources/GateFlowKit/Experiment/BucketEngine.swift": {
+    "dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Experiment/BucketEngine.d",
+    "object": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Experiment/BucketEngine.swift.o",
+    "swiftmodule": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Experiment/BucketEngine~partial.swiftmodule",
+    "swift-dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Experiment/BucketEngine.swiftdeps"
+  },
+  "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/Sources/GateFlowKit/Experiment/Experiment.swift": {
+    "dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Experiment/Experiment.d",
+    "object": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Experiment/Experiment.swift.o",
+    "swiftmodule": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Experiment/Experiment~partial.swiftmodule",
+    "swift-dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Experiment/Experiment.swiftdeps"
+  },
+  "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/Sources/GateFlowKit/GateFlow.swift": {
+    "dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/GateFlow.d",
+    "object": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/GateFlow.swift.o",
+    "swiftmodule": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/GateFlow~partial.swiftmodule",
+    "swift-dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/GateFlow.swiftdeps"
+  },
+  "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/Sources/GateFlowKit/Identity/IdentityLogic.swift": {
+    "dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Identity/IdentityLogic.d",
+    "object": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Identity/IdentityLogic.swift.o",
+    "swiftmodule": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Identity/IdentityLogic~partial.swiftmodule",
+    "swift-dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Identity/IdentityLogic.swiftdeps"
+  },
+  "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/Sources/GateFlowKit/Identity/IdentityManager.swift": {
+    "dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Identity/IdentityManager.d",
+    "object": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Identity/IdentityManager.swift.o",
+    "swiftmodule": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Identity/IdentityManager~partial.swiftmodule",
+    "swift-dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Identity/IdentityManager.swiftdeps"
+  },
+  "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/Sources/GateFlowKit/Identity/PublicIdentity.swift": {
+    "dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Identity/PublicIdentity.d",
+    "object": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Identity/PublicIdentity.swift.o",
+    "swiftmodule": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Identity/PublicIdentity~partial.swiftmodule",
+    "swift-dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Identity/PublicIdentity.swiftdeps"
+  },
+  "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/Sources/GateFlowKit/Logger/LogLevel.swift": {
+    "dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Logger/LogLevel.d",
+    "object": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Logger/LogLevel.swift.o",
+    "swiftmodule": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Logger/LogLevel~partial.swiftmodule",
+    "swift-dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Logger/LogLevel.swiftdeps"
+  },
+  "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/Sources/GateFlowKit/Logger/LogScope.swift": {
+    "dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Logger/LogScope.d",
+    "object": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Logger/LogScope.swift.o",
+    "swiftmodule": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Logger/LogScope~partial.swiftmodule",
+    "swift-dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Logger/LogScope.swiftdeps"
+  },
+  "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/Sources/GateFlowKit/Logger/Logger.swift": {
+    "dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Logger/Logger.d",
+    "object": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Logger/Logger.swift.o",
+    "swiftmodule": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Logger/Logger~partial.swiftmodule",
+    "swift-dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Logger/Logger.swiftdeps"
+  },
+  "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/Sources/GateFlowKit/Misc/DeviceHelper.swift": {
+    "dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Misc/DeviceHelper.d",
+    "object": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Misc/DeviceHelper.swift.o",
+    "swiftmodule": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Misc/DeviceHelper~partial.swiftmodule",
+    "swift-dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Misc/DeviceHelper.swiftdeps"
+  },
+  "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/Sources/GateFlowKit/Misc/MurmurHash3.swift": {
+    "dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Misc/MurmurHash3.d",
+    "object": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Misc/MurmurHash3.swift.o",
+    "swiftmodule": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Misc/MurmurHash3~partial.swiftmodule",
+    "swift-dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Misc/MurmurHash3.swiftdeps"
+  },
+  "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/Sources/GateFlowKit/Network/Endpoint.swift": {
+    "dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Network/Endpoint.d",
+    "object": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Network/Endpoint.swift.o",
+    "swiftmodule": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Network/Endpoint~partial.swiftmodule",
+    "swift-dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Network/Endpoint.swiftdeps"
+  },
+  "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/Sources/GateFlowKit/Network/Network.swift": {
+    "dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Network/Network.d",
+    "object": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Network/Network.swift.o",
+    "swiftmodule": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Network/Network~partial.swiftmodule",
+    "swift-dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Network/Network.swiftdeps"
+  },
+  "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/Sources/GateFlowKit/Storage/Storage.swift": {
+    "dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Storage/Storage.d",
+    "object": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Storage/Storage.swift.o",
+    "swiftmodule": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Storage/Storage~partial.swiftmodule",
+    "swift-dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/Storage/Storage.swiftdeps"
+  }
+}

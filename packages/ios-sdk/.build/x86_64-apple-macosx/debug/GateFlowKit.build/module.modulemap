@@ -1,0 +1,4 @@
+module GateFlowKit {
+    header "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowKit.build/GateFlowKit-Swift.h"
+    requires objc
+}

@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["GateFlowExpoModule"]
+  },
+  "android": {
+    "modules": ["com.gateflow.expo.GateFlowExpoModule"]
+  }
+}

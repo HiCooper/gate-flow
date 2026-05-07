@@ -1,0 +1,12 @@
+{
+  "extends": "expo-module-scripts/tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./build",
+    "baseUrl": ".",
+    "paths": {
+      "@gate-flow/expo": ["./src/index.ts"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": ["**/__tests__/**"]
+}

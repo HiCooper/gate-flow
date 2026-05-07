@@ -1,0 +1,47 @@
+{
+  "name": "@gate-flow/expo",
+  "version": "0.0.1",
+  "description": "Expo SDK for GateFlow A/B experimentation platform",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "source": "src/index.ts",
+  "sideEffects": false,
+  "scripts": {
+    "build": "expo-module build",
+    "clean": "expo-module clean",
+    "typecheck": "tsc --noEmit",
+    "lint": "expo-module lint",
+    "test": "expo-module test",
+    "prepare": "expo-module prepare",
+    "prepublishOnly": "expo-module prepublishOnly",
+    "expo-module": "expo-module",
+    "open:ios": "xed example/ios",
+    "open:android": "open -a \"Android Studio\" example/android",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
+  },
+  "keywords": [
+    "expo",
+    "react-native",
+    "ab-testing",
+    "gateflow",
+    "experimentation"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "expo": "*",
+    "expo-modules-core": "*",
+    "zustand": "^5.0.9"
+  },
+  "devDependencies": {
+    "expo-module-scripts": "^4.1.0",
+    "react": "*",
+    "react-native": "*",
+    "typescript": "*"
+  },
+  "peerDependencies": {
+    "expo": "*",
+    "react": "*",
+    "react-native": "*"
+  }
+}

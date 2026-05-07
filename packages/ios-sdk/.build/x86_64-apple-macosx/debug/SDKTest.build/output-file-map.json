@@ -1,0 +1,23 @@
+{
+  "": {
+    "swift-dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/SDKTest.build/master.swiftdeps"
+  },
+  "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/Tests/StandaloneTest/BucketEngine.swift": {
+    "dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/SDKTest.build/BucketEngine.d",
+    "object": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/SDKTest.build/BucketEngine.swift.o",
+    "swiftmodule": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/SDKTest.build/BucketEngine~partial.swiftmodule",
+    "swift-dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/SDKTest.build/BucketEngine.swiftdeps"
+  },
+  "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/Tests/StandaloneTest/MurmurHash3.swift": {
+    "dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/SDKTest.build/MurmurHash3.d",
+    "object": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/SDKTest.build/MurmurHash3.swift.o",
+    "swiftmodule": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/SDKTest.build/MurmurHash3~partial.swiftmodule",
+    "swift-dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/SDKTest.build/MurmurHash3.swiftdeps"
+  },
+  "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/Tests/StandaloneTest/main.swift": {
+    "dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/SDKTest.build/main.d",
+    "object": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/SDKTest.build/main.swift.o",
+    "swiftmodule": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/SDKTest.build/main~partial.swiftmodule",
+    "swift-dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/SDKTest.build/main.swiftdeps"
+  }
+}

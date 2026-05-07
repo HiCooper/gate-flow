@@ -1,0 +1,57 @@
+server:
+  port: 8082
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: readmore-service
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/readmore_db?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: readmore123
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      initial-size: 5
+      min-idle: 5
+      max-active: 20
+      max-wait: 60000
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  # Flyway配置
+  flyway:
+    enabled: true
+    locations: classpath:db/data
+    baseline-on-migrate: true
+    validate-on-migrate: true
+
+mybatis-plus:
+  mapper-locations: classpath*:mapper/**/*.xml
+  type-aliases-package: com.gateflow.readmore.domain.entity
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+
+# Victor SDK configuration
+readmore:
+  victor:
+    server-url: http://localhost:8081
+    platform: readmore
+    polling-interval: 30
+    request-timeout: 5000
+    retry-count: 3
+    event-tracking-enabled: true
+    gateflow-event-url: http://localhost:8081/api/v1/events
+
+# SpringDoc
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html

@@ -1,0 +1,11 @@
+{
+  "": {
+    "swift-dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowTests.build/master.swiftdeps"
+  },
+  "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/Tests/GateFlowTests/main.swift": {
+    "dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowTests.build/main.d",
+    "object": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowTests.build/main.swift.o",
+    "swiftmodule": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowTests.build/main~partial.swiftmodule",
+    "swift-dependencies": "/Users/xueancao/Projects/QoderProjects/gate-flow/packages/ios-sdk/.build/x86_64-apple-macosx/debug/GateFlowTests.build/main.swiftdeps"
+  }
+}
