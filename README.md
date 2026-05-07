@@ -140,7 +140,7 @@ GateFlow 是一个功能完整的企业级 A/B 测试实验平台，提供实验
 
 ```
 apps/
-├── superab-admin/              # AB实验管理控制台
+├── admin/                    # AB实验管理控制台
 │   ├── src/
 │   │   ├── api/               # API接口定义
 │   │   ├── components/        # React组件
@@ -150,7 +150,7 @@ apps/
 │   │   └── mocks/             # Mock数据
 │   └── package.json
 │
-├── superab-marketing/          # 营销展示页面
+├── marketing/          # 营销展示页面
 │   ├── src/
 │   │   ├── components/        # 营销组件
 │   │   ├── layouts/           # 布局
@@ -331,8 +331,8 @@ http://localhost:8080/swagger-ui.html
 ### 前端配置
 
 环境变量文件位于各应用的根目录：
-- `apps/superab-admin/.env.development`
-- `apps/superab-marketing/.env.development`
+- `apps/admin/.env.development`
+- `apps/marketing/.env.development`
 
 ### 后端配置
 

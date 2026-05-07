@@ -1,9 +1,9 @@
 [submodule "backend/victor-ab"]
 	path = backend/victor-ab
 	url = https://github.com/HiCooper/victor-ab.git
-[submodule "apps/superab-admin"]
-	path = apps/superab-admin
+[submodule "apps/admin"]
+	path = apps/admin
 	url = https://github.com/HiCooper/superab-admin.git
-[submodule "apps/superab-marketing"]
-	path = apps/superab-marketing
+[submodule "apps/marketing"]
+	path = apps/marketing
 	url = https://github.com/HiCooper/superab-marketing
