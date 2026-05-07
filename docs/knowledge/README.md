@@ -33,8 +33,15 @@ docs/knowledge/
 
 | 路径 | 主题 | 何时加载 |
 |------|------|----------|
+| `01-project-overview/GateFlow_产品方案_纯净版.md` | 产品方案 | 理解产品定位、功能边界、用户角色时 |
+| `01-project-overview/native-sdk-architecture.md` | Native SDK 架构 | 理解 iOS/Android SDK 设计模式时 |
+| `04-best-practices/WINDOWS_COMMANDS.md` | Windows 命令 | Windows 环境下项目操作参考 |
+| `07-test-rule/E2E_TESTING_GUIDE.md` | E2E 测试 | 编写或调试端到端测试时 |
+| `05-historical-lessons/2026-05-07_swift-macos-runtime-crash.md` | Swift macOS 崩溃 | 在 macOS 上跑 Swift 单元测试时 |
+| `06-api-reference/expo-gateflow-api.md` | Expo SDK API | React Native 集成 GateFlow 时 |
+| `07-test-rule/SDK_TEST_PROGRESS.md` | SDK 测试进展 | 在另一台机器上继续 SDK 测试时 |
 
-> **当前状态：** 子目录已创建，但尚未放入具体文档。新增 `.md` 文件后，请在上表注册，以便 Agent 通过关键词匹配发现。
+> **当前状态：** 4/8 目录已有文档，4 个目录为空。新增 `.md` 文件后，请在上表注册。
 
 ## 如何新增知识条目
 

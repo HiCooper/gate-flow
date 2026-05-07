@@ -5,6 +5,7 @@
     "dev": "pnpm -r --parallel dev",
     "dev:marketing": "pnpm --filter @gate-flow/marketing dev",
     "dev:admin": "pnpm --filter @gate-flow/admin dev",
+    "dev:readmore": "pnpm --filter @gate-flow/readmore dev",
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck"
