@@ -179,7 +179,6 @@ docker-compose logs -f victor-service
 
 ### 核心文档
 
-- [实验ID生成器使用说明](docs/EXPERIMENT_ID_GENERATOR_USAGE.md) - 实验ID生成规则和最佳实践
 - [数据库变更日志](DB_CHANGELOG.md) - 数据库版本变更记录
 
 ### API 文档
