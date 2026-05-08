@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Victor SDK 系统架构图</title>
+    <style>
+      :root {
+        --c-bg: #f8fafc;
+        --c-canvas: #ffffff;
+        --c-border: #cbd5e1;
+        --c-text-main: #0f172a;
+        --c-text-sub: #64748b;
+        --c-accent: #0f172a;
+        --font-ui: system-ui, -apple-system, 'Segoe UI', sans-serif;
+        --font-mono: 'SF Mono', Monaco, Consolas, monospace;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: var(--c-bg);
+        font-family: var(--font-ui);
+        color: var(--c-text-main);
+        padding: 40px;
+      }
+
+      .diagram-canvas {
+        background: var(--c-canvas);
+        border: 2px solid var(--c-border);
+        padding: 32px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .diagram-header {
+        border-bottom: 1px solid var(--c-border);
+        padding-bottom: 16px;
+        margin-bottom: 24px;
+      }
+
+      .diagram-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--c-text-main);
+      }
+
+      .diagram-subtitle {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--c-text-sub);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 4px;
+      }
+
+      /* Layout */
+      .arch-layout {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: 24px;
+      }
+
+      .arch-sidebar {
+        border-right: 1px solid var(--c-border);
+        padding-right: 24px;
+      }
+
+      .arch-content {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      /* Section */
+      .arch-section {
+        margin-bottom: 24px;
+      }
+
+      .section-title {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--c-text-sub);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--c-border);
+      }
+
+      /* Node */
+      .node {
+        background: var(--c-canvas);
+        border: 1px solid var(--c-border);
+        padding: 12px 16px;
+        margin-bottom: 8px;
+      }
+
+      .node-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--c-text-main);
+        margin-bottom: 4px;
+      }
+
+      .node-desc {
+        font-size: 12px;
+        color: var(--c-text-sub);
+      }
+
+      .node-method {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--c-text-sub);
+        margin-top: 8px;
+        padding: 4px 8px;
+        background: #f1f5f9;
+        border: 1px solid var(--c-border);
+      }
+
+      /* Module Box */
+      .module-box {
+        border: 1px solid var(--c-border);
+        background: #f8fafc;
+        padding: 16px;
+        margin-bottom: 16px;
+      }
+
+      .module-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--c-border);
+      }
+
+      .module-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--c-text-main);
+      }
+
+      .module-badge {
+        font-size: 10px;
+        font-family: var(--font-mono);
+        padding: 2px 6px;
+        border: 1px solid var(--c-text-main);
+        text-transform: uppercase;
+      }
+
+      /* Method List */
+      .method-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .method-item {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--c-text-main);
+        padding: 4px 8px;
+        background: var(--c-canvas);
+        border: 1px solid var(--c-border);
+      }
+
+      /* Flow */
+      .flow-box {
+        border: 1px solid var(--c-border);
+        padding: 16px;
+        background: #f8fafc;
+        margin-top: 16px;
+      }
+
+      .flow-title {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--c-text-sub);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+      }
+
+      .flow-step {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 8px;
+        font-size: 12px;
+      }
+
+      .flow-step-num {
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--c-accent);
+        color: var(--c-canvas);
+        font-size: 11px;
+        font-weight: 600;
+      }
+
+      .flow-step-text {
+        color: var(--c-text-main);
+      }
+
+      /* Data Model */
+      .data-model {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+      }
+
+      .data-model-item {
+        border: 1px solid var(--c-border);
+        padding: 10px 12px;
+        background: var(--c-canvas);
+      }
+
+      .data-model-name {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--c-text-main);
+        margin-bottom: 4px;
+      }
+
+      .data-model-desc {
+        font-size: 11px;
+        color: var(--c-text-sub);
+      }
+
+      /* Dependency */
+      .dep-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .dep-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+      }
+
+      .dep-arrow {
+        font-size: 10px;
+        color: var(--c-text-sub);
+      }
+
+      .dep-name {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--c-text-main);
+        padding: 2px 6px;
+        background: #f1f5f9;
+        border: 1px solid var(--c-border);
+      }
+
+      /* Notes */
+      .notes-box {
+        border: 1px solid var(--c-border);
+        padding: 12px 16px;
+        background: #f8fafc;
+        margin-top: 24px;
+      }
+
+      .notes-title {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--c-text-sub);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+      }
+
+      .notes-content {
+        font-size: 11px;
+        color: var(--c-text-sub);
+        line-height: 1.6;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="diagram-canvas">
+      <div class="diagram-header">
+        <h1 class="diagram-title">Victor SDK 系统架构图</h1>
+        <p class="diagram-subtitle">A/B 实验客户端 SDK 架构设计</p>
+      </div>
+
+      <div class="arch-layout">
+        <!-- Left Sidebar -->
+        <div class="arch-sidebar">
+          <div class="arch-section">
+            <div class="section-title">核心模块</div>
+            <div class="module-box">
+              <div class="module-header">
+                <span class="module-name">victor-sdk</span>
+                <span class="module-badge">核心</span>
+              </div>
+              <div class="method-list">
+                <div class="method-item">VictorClient</div>
+                <div class="method-item">VictorConfig</div>
+                <div class="method-item">BucketEngine</div>
+              </div>
+            </div>
+
+            <div class="module-box">
+              <div class="module-header">
+                <span class="module-name">victor-bucketing</span>
+                <span class="module-badge">引擎</span>
+              </div>
+              <div class="method-list">
+                <div class="method-item">计算分桶</div>
+                <div class="method-item">映射变体</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="arch-section">
+            <div class="section-title">外部依赖</div>
+            <div class="dep-list">
+              <div class="dep-item">
+                <span class="dep-arrow">→</span>
+                <span class="dep-name">OkHttp3</span>
+              </div>
+              <div class="dep-item">
+                <span class="dep-arrow">→</span>
+                <span class="dep-name">Caffeine</span>
+              </div>
+              <div class="dep-item">
+                <span class="dep-arrow">→</span>
+                <span class="dep-name">Jackson</span>
+              </div>
+              <div class="dep-item">
+                <span class="dep-arrow">→</span>
+                <span class="dep-name">Lombok</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Content -->
+        <div class="arch-content">
+          <!-- API -->
+          <div class="arch-section">
+            <div class="section-title">SDK API</div>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+              <div class="node">
+                <div class="node-title">VictorClient.init(config)</div>
+                <div class="node-desc">初始化SDK客户端</div>
+                <div class="node-method">static VictorClient init(VictorConfig config)</div>
+              </div>
+              <div class="node">
+                <div class="node-title">getVariant(userId, expKey)</div>
+                <div class="node-desc">获取用户在指定实验中的版本</div>
+                <div class="node-method">String getVariant(String userId, String experimentKey)</div>
+              </div>
+              <div class="node">
+                <div class="node-title">getAllVariants(userId)</div>
+                <div class="node-desc">获取用户所有实验的分桶结果</div>
+                <div class="node-method">Map&lt;String, String&gt; getAllVariants(String userId)</div>
+              </div>
+              <div class="node">
+                <div class="node-title">getParam(userId, expKey, key, default)</div>
+                <div class="node-desc">获取实验参数值</div>
+                <div class="node-method">T getParam(String, String, String, T defaultValue)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Data Models -->
+          <div class="arch-section">
+            <div class="section-title">数据模型</div>
+            <div class="data-model">
+              <div class="data-model-item">
+                <div class="data-model-name">VictorConfig</div>
+                <div class="data-model-desc">serverUrl, apiKey, platform, pollingInterval, cacheExpiry, cacheMaxSize</div>
+              </div>
+              <div class="data-model-item">
+                <div class="data-model-name">SdkConfigResponse</div>
+                <div class="data-model-desc">实验配置响应，含ExperimentConfig列表和version</div>
+              </div>
+              <div class="data-model-item">
+                <div class="data-model-name">SdkExperimentTag</div>
+                <div class="data-model-desc">实验标签: expId, variant, layer</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Core Flow -->
+          <div class="arch-section">
+            <div class="section-title">核心流程</div>
+            <div class="flow-box">
+              <div class="flow-title">分桶计算流程</div>
+              <div class="flow-step">
+                <div class="flow-step-num">1</div>
+                <div class="flow-step-text">客户端启动时从服务端拉取实验配置 (REST API)</div>
+              </div>
+              <div class="flow-step">
+                <div class="flow-step-num">2</div>
+                <div class="flow-step-text">配置存入本地 Caffeine 缓存</div>
+              </div>
+              <div class="flow-step">
+                <div class="flow-step-num">3</div>
+                <div class="flow-step-text">每秒轮询检查配置版本变化</div>
+              </div>
+              <div class="flow-step">
+                <div class="flow-step-num">4</div>
+                <div class="flow-step-text">调用 getVariant() 时，本地执行 BucketEngine.computeBucketResult()</div>
+              </div>
+              <div class="flow-step">
+                <div class="flow-step-num">5</div>
+                <div class="flow-step-text">MurmurHash3(userId#layerId#salt) % 10000 → bucket → 映射变体</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="notes-box">
+        <div class="notes-title">设计说明</div>
+        <div class="notes-content">
+          1. victor-bucketing 模块为零Spring依赖的纯Java模块，可直接嵌入客户端SDK<br/>
+          2. 分桶算法: MurmurHash3 对 userId#layerId#salt 进行哈希，取模10000得到bucket编号 (0-9999)<br/>
+          3. 变体映射: 根据ExperimentSpec中的variantSpecs数组匹配bucket范围 [bucketStart, bucketEnd]<br/>
+          4. 配置更新: 支持增量拉取 (fromVersion参数)，304 Not Modified 时跳过更新<br/>
+          5. 线程安全: 使用ReentrantLock保护配置更新操作
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

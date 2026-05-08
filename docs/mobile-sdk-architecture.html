@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mobile SDK 系统架构图 (iOS/Android)</title>
+    <style>
+      :root {
+        --c-bg: #f8fafc;
+        --c-canvas: #ffffff;
+        --c-border: #cbd5e1;
+        --c-text-main: #0f172a;
+        --c-text-sub: #64748b;
+        --c-accent: #0f172a;
+        --font-ui: system-ui, -apple-system, 'Segoe UI', sans-serif;
+        --font-mono: 'SF Mono', Monaco, Consolas, monospace;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: var(--c-bg);
+        font-family: var(--font-ui);
+        color: var(--c-text-main);
+        padding: 40px;
+      }
+
+      .diagram-canvas {
+        background: var(--c-canvas);
+        border: 2px solid var(--c-border);
+        padding: 32px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .diagram-header {
+        border-bottom: 1px solid var(--c-border);
+        padding-bottom: 16px;
+        margin-bottom: 24px;
+      }
+
+      .diagram-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--c-text-main);
+      }
+
+      .diagram-subtitle {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--c-text-sub);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 4px;
+      }
+
+      /* Grid Layout */
+      .arch-grid {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 24px;
+      }
+
+      .arch-sidebar {
+        border-right: 1px solid var(--c-border);
+        padding-right: 24px;
+      }
+
+      /* Section */
+      .arch-section {
+        margin-bottom: 24px;
+      }
+
+      .section-title {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--c-text-sub);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--c-border);
+      }
+
+      /* Module Box */
+      .module-box {
+        border: 1px solid var(--c-border);
+        background: #f8fafc;
+        padding: 12px;
+        margin-bottom: 12px;
+      }
+
+      .module-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+      }
+
+      .module-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--c-text-main);
+      }
+
+      .module-badge {
+        font-size: 10px;
+        font-family: var(--font-mono);
+        padding: 2px 6px;
+        border: 1px solid var(--c-text-main);
+        text-transform: uppercase;
+      }
+
+      /* Method List */
+      .method-list {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .method-item {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--c-text-main);
+        padding: 4px 8px;
+        background: var(--c-canvas);
+        border: 1px solid var(--c-border);
+      }
+
+      /* API Cards */
+      .api-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .api-card {
+        border: 1px solid var(--c-border);
+        padding: 12px;
+        background: var(--c-canvas);
+      }
+
+      .api-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--c-text-main);
+        margin-bottom: 4px;
+      }
+
+      .api-desc {
+        font-size: 11px;
+        color: var(--c-text-sub);
+        margin-bottom: 8px;
+      }
+
+      .api-signature {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--c-text-sub);
+        padding: 4px 8px;
+        background: #f1f5f9;
+        border: 1px solid var(--c-border);
+      }
+
+      /* Data Models */
+      .data-models {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+      }
+
+      .data-model {
+        border: 1px solid var(--c-border);
+        padding: 10px 12px;
+        background: var(--c-canvas);
+      }
+
+      .data-model-name {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--c-text-main);
+        margin-bottom: 4px;
+      }
+
+      .data-model-desc {
+        font-size: 11px;
+        color: var(--c-text-sub);
+      }
+
+      /* Dependency */
+      .dep-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .dep-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+      }
+
+      .dep-arrow {
+        font-size: 10px;
+        color: var(--c-text-sub);
+      }
+
+      .dep-name {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--c-text-main);
+        padding: 2px 6px;
+        background: #f1f5f9;
+        border: 1px solid var(--c-border);
+      }
+
+      /* Platform Modules */
+      .platform-modules {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .platform-box {
+        border: 1px solid var(--c-border);
+        padding: 12px;
+        background: #f8fafc;
+      }
+
+      .platform-title {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--c-text-main);
+        margin-bottom: 8px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--c-border);
+      }
+
+      .platform-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .platform-item {
+        font-size: 11px;
+        color: var(--c-text-main);
+      }
+
+      .platform-item-name {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--c-text-main);
+        padding: 2px 6px;
+        background: var(--c-canvas);
+        border: 1px solid var(--c-border);
+        display: inline-block;
+        margin-right: 6px;
+      }
+
+      /* Notes */
+      .notes-box {
+        border: 1px solid var(--c-border);
+        padding: 12px 16px;
+        background: #f8fafc;
+        margin-top: 24px;
+      }
+
+      .notes-title {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--c-text-sub);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+      }
+
+      .notes-content {
+        font-size: 11px;
+        color: var(--c-text-sub);
+        line-height: 1.6;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="diagram-canvas">
+      <div class="diagram-header">
+        <h1 class="diagram-title">Mobile SDK 系统架构图</h1>
+        <p class="diagram-subtitle">iOS / Android Expo SDK 架构设计</p>
+      </div>
+
+      <div class="arch-grid">
+        <!-- Left Sidebar -->
+        <div class="arch-sidebar">
+          <div class="arch-section">
+            <div class="section-title">React Native 模块</div>
+            <div class="module-box">
+              <div class="module-header">
+                <span class="module-name">expo-gateflow</span>
+                <span class="module-badge">NPM</span>
+              </div>
+              <div class="method-list">
+                <div class="method-item">GateFlowProvider</div>
+                <div class="method-item">useGateFlow()</div>
+                <div class="method-item">useExperiment()</div>
+                <div class="method-item">useGateFlowEvents()</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="arch-section">
+            <div class="section-title">平台原生</div>
+            <div class="dep-list">
+              <div class="dep-item">
+                <span class="dep-arrow">→</span>
+                <span class="dep-name">Swift (iOS)</span>
+              </div>
+              <div class="dep-item">
+                <span class="dep-arrow">→</span>
+                <span class="dep-name">Kotlin (Android)</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="arch-section">
+            <div class="section-title">外部依赖</div>
+            <div class="dep-list">
+              <div class="dep-item">
+                <span class="dep-arrow">→</span>
+                <span class="dep-name">Zustand</span>
+              </div>
+              <div class="dep-item">
+                <span class="dep-arrow">→</span>
+                <span class="dep-name">React</span>
+              </div>
+              <div class="dep-item">
+                <span class="dep-arrow">→</span>
+                <span class="dep-name">expo-modules</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Content -->
+        <div class="arch-content">
+          <!-- React API -->
+          <div class="arch-section">
+            <div class="section-title">React API</div>
+            <div class="api-grid">
+              <div class="api-card">
+                <div class="api-title">GateFlowProvider</div>
+                <div class="api-desc">根组件，提供SDK上下文</div>
+                <div class="api-signature">&lt;GateFlowProvider&gt;children&lt;/&gt;</div>
+              </div>
+              <div class="api-card">
+                <div class="api-title">useGateFlow()</div>
+                <div class="api-desc">核心Hook，获取SDK状态和操作</div>
+                <div class="api-signature">const { configure, identify, trackEvent } = useGateFlow()</div>
+              </div>
+              <div class="api-card">
+                <div class="api-title">useExperiment()</div>
+                <div class="api-desc">实验Hook，自动评估并缓存结果</div>
+                <div class="api-signature">const { status, variant } = useExperiment(placementKey)</div>
+              </div>
+              <div class="api-card">
+                <div class="api-title">useGateFlowEvents()</div>
+                <div class="api-desc">事件监听Hook</div>
+                <div class="api-signature">useGateFlowEvents(eventType, callback)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Store (Zustand) -->
+          <div class="arch-section">
+            <div class="section-title">状态管理 (Zustand Store)</div>
+            <div class="api-grid">
+              <div class="api-card">
+                <div class="api-title">State</div>
+                <div class="api-desc">isConfigured, isLoading, user, activeExperiments, configurationError</div>
+              </div>
+              <div class="api-card">
+                <div class="api-title">Actions</div>
+                <div class="api-desc">configure, identify, reset, evaluateExperiment, trackEvent, setUserAttributes</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Data Models -->
+          <div class="arch-section">
+            <div class="section-title">数据模型</div>
+            <div class="data-models">
+              <div class="data-model">
+                <div class="data-model-name">Experiment</div>
+                <div class="data-model-desc">id, key, layerId, variant</div>
+              </div>
+              <div class="data-model">
+                <div class="data-model-name">Variant</div>
+                <div class="data-model-desc">key, type, params</div>
+              </div>
+              <div class="data-model">
+                <div class="data-model-name">ExperimentResult</div>
+                <div class="data-model-desc">matched | holdout | noMatch | notFound | error</div>
+              </div>
+              <div class="data-model">
+                <div class="data-model-name">GateFlowEvent</div>
+                <div class="data-model-desc">eventType, userId, experimentId, variantKey, properties</div>
+              </div>
+              <div class="data-model">
+                <div class="data-model-name">UserAttributes</div>
+                <div class="data-model-desc">userId, [key: string]: any</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Platform Implementation -->
+          <div class="arch-section">
+            <div class="section-title">平台实现</div>
+            <div class="platform-modules">
+              <div class="platform-box">
+                <div class="platform-title">iOS (Swift)</div>
+                <div class="platform-list">
+                  <div class="platform-item">
+                    <span class="platform-item-name">GateFlowExpoModule</span>
+                    主入口
+                  </div>
+                  <div class="platform-item">
+                    <span class="platform-item-name">GateFlowBridgeAdapter</span>
+                    桥接适配
+                  </div>
+                </div>
+              </div>
+              <div class="platform-box">
+                <div class="platform-title">Android (Kotlin)</div>
+                <div class="platform-list">
+                  <div class="platform-item">
+                    <span class="platform-item-name">GateFlowExpoModule</span>
+                    主入口
+                  </div>
+                  <div class="platform-item">
+                    <span class="platform-item-name">GateFlowBridgeAdapter</span>
+                    桥接适配
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="notes-box">
+        <div class="notes-title">设计说明</div>
+        <div class="notes-content">
+          1. expo-gateflow 为 Expo/React Native 跨平台 SDK，同时支持 iOS 和 Android<br/>
+          2. 使用 Zustand 进行状态管理，提供类似 Redux 的 API 但更轻量<br/>
+          3. Native Module 通过 expo-modules 暴露给 JS 层，实现跨平台调用<br/>
+          4. 支持事件驱动的编程模式，通过 addListener 订阅原生事件<br/>
+          5. 支持用户识别 (identify)、用户属性更新 (setUserAttributes)、实验评估 (evaluateExperiment)<br/>
+          6. 实验结果类型: matched (命中), holdout (未命中), noMatch (不匹配), notFound (未找到), error (错误)
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mobile SDK 与实验系统关系架构图</title>
+    <style>
+      :root {
+        --c-bg: #f8fafc;
+        --c-canvas: #ffffff;
+        --c-border: #cbd5e1;
+        --c-text-main: #0f172a;
+        --c-text-sub: #64748b;
+        --c-accent: #0f172a;
+        --c-layer-client: #f0f9ff;
+        --c-layer-sdk: #f0fdf4;
+        --c-layer-gateway: #fef3c7;
+        --c-layer-service: #f5d0fe;
+        --c-layer-data: #e0e7ff;
+        --font-ui: system-ui, -apple-system, 'Segoe UI', sans-serif;
+        --font-mono: 'SF Mono', Monaco, Consolas, monospace;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: var(--c-bg);
+        font-family: var(--font-ui);
+        color: var(--c-text-main);
+        padding: 40px;
+      }
+
+      .diagram-canvas {
+        background: var(--c-canvas);
+        border: 2px solid var(--c-border);
+        padding: 32px;
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+
+      .diagram-header {
+        border-bottom: 1px solid var(--c-border);
+        padding-bottom: 16px;
+        margin-bottom: 32px;
+      }
+
+      .diagram-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--c-text-main);
+      }
+
+      .diagram-subtitle {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--c-text-sub);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 4px;
+      }
+
+      /* Layer Architecture */
+      .layer-arch {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        border: 1px solid var(--c-border);
+      }
+
+      .layer {
+        position: relative;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .layer--client {
+        background: var(--c-layer-client);
+        padding-top: 24px;
+      }
+
+      .layer--sdk {
+        background: var(--c-layer-sdk);
+      }
+
+      .layer--gateway {
+        background: var(--c-layer-gateway);
+        border-top: 1px dashed var(--c-border);
+        border-bottom: 1px dashed var(--c-border);
+      }
+
+      .layer--service {
+        background: var(--c-layer-service);
+        border-top: 1px dashed var(--c-border);
+        border-bottom: 1px dashed var(--c-border);
+      }
+
+      .layer--data {
+        background: var(--c-layer-data);
+        border-top: 1px dashed var(--c-border);
+      }
+
+      .layer-label {
+        position: absolute;
+        left: 8px;
+        top: 50%;
+        transform: translateY(-50%) rotate(-90deg);
+        transform-origin: center;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--c-text-sub);
+        white-space: nowrap;
+      }
+
+      .layer-title {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--c-text-sub);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+        text-align: right;
+        position: absolute;
+        right: 16px;
+        top: 16px;
+      }
+
+      /* Components */
+      .component-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-left: 48px;
+      }
+
+      .component {
+        flex: 1;
+        min-width: 120px;
+        padding: 10px 14px;
+        background: var(--c-canvas);
+        border: 1px solid var(--c-border);
+      }
+
+      .component-name {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--c-text-main);
+      }
+
+      .component-desc {
+        font-size: 10px;
+        color: var(--c-text-sub);
+        margin-top: 4px;
+      }
+
+      /* Data Flow Arrows */
+      .data-flow {
+        position: absolute;
+        right: 80px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .flow-arrow {
+        font-size: 14px;
+        color: var(--c-text-sub);
+      }
+
+      .flow-label {
+        font-size: 9px;
+        font-family: var(--font-mono);
+        color: var(--c-text-sub);
+        white-space: nowrap;
+        background: var(--c-canvas);
+        padding: 2px 6px;
+        border: 1px solid var(--c-border);
+      }
+
+      /* Bottom Section */
+      .bottom-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-top: 24px;
+      }
+
+      .section-box {
+        border: 1px solid var(--c-border);
+        padding: 14px;
+        background: #f8fafc;
+      }
+
+      .section-title {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--c-text-sub);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--c-border);
+      }
+
+      .section-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .section-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .section-method {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        padding: 3px 8px;
+        background: var(--c-canvas);
+        border: 1px solid var(--c-border);
+        color: var(--c-text-main);
+      }
+
+      .section-desc {
+        font-size: 11px;
+        color: var(--c-text-sub);
+      }
+
+      /* Notes */
+      .notes-box {
+        border: 1px solid var(--c-border);
+        padding: 12px 16px;
+        background: #f8fafc;
+        margin-top: 24px;
+      }
+
+      .notes-title {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--c-text-sub);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+      }
+
+      .notes-content {
+        font-size: 11px;
+        color: var(--c-text-sub);
+        line-height: 1.7;
+      }
+
+      /* Legend */
+      .legend {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 16px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--c-border);
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        color: var(--c-text-sub);
+      }
+
+      .legend-color {
+        width: 12px;
+        height: 12px;
+        border: 1px solid var(--c-border);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="diagram-canvas">
+      <div class="diagram-header">
+        <h1 class="diagram-title">Mobile SDK 与实验系统关系架构图</h1>
+        <p class="diagram-subtitle">客户端集成与后端服务分层架构</p>
+      </div>
+
+      <!-- Legend -->
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--c-layer-client)"></div>
+          <span>客户端层</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--c-layer-sdk)"></div>
+          <span>SDK层</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--c-layer-gateway)"></div>
+          <span>网关层</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--c-layer-service)"></div>
+          <span>服务层</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--c-layer-data)"></div>
+          <span>数据层</span>
+        </div>
+      </div>
+
+      <!-- Layer Architecture -->
+      <div class="layer-arch">
+        <!-- Client Layer -->
+        <div class="layer layer--client">
+          <div class="component-group">
+            <div class="component">
+              <div class="component-name">业务页面</div>
+              <div class="component-desc">React Native 页面</div>
+            </div>
+            <div class="component">
+              <div class="component-name">业务组件</div>
+              <div class="component-desc">自定义组件</div>
+            </div>
+            <div class="component">
+              <div class="component-name">业务服务</div>
+              <div class="component-desc">TypeScript</div>
+            </div>
+          </div>
+          <div class="layer-title">客户端层</div>
+          <div class="data-flow" style="top: 20px;">
+            <span class="flow-label">REST API</span>
+            <span class="flow-arrow">↓</span>
+          </div>
+        </div>
+
+        <!-- SDK Layer -->
+        <div class="layer layer--sdk">
+          <div class="component-group">
+            <div class="component">
+              <div class="component-name">GateFlowProvider</div>
+              <div class="component-desc">Context 注入</div>
+            </div>
+            <div class="component">
+              <div class="component-name">useGateFlow()</div>
+              <div class="component-desc">核心 Hook</div>
+            </div>
+            <div class="component">
+              <div class="component-name">useExperiment()</div>
+              <div class="component-desc">实验 Hook</div>
+            </div>
+            <div class="component">
+              <div class="component-name">Native Module</div>
+              <div class="component-desc">分桶/缓存/事件</div>
+            </div>
+          </div>
+          <div class="layer-title">SDK层</div>
+          <div class="data-flow" style="top: 80px;">
+            <span class="flow-label">HTTP</span>
+            <span class="flow-arrow">↓</span>
+          </div>
+        </div>
+
+        <!-- Gateway Layer -->
+        <div class="layer layer--gateway">
+          <div class="component-group">
+            <div class="component">
+              <div class="component-name">API Gateway</div>
+              <div class="component-desc">请求路由</div>
+            </div>
+            <div class="component">
+              <div class="component-name">Auth Middleware</div>
+              <div class="component-desc">API Key 鉴权</div>
+            </div>
+            <div class="component">
+              <div class="component-name">Rate Limiter</div>
+              <div class="component-desc">限流控制</div>
+            </div>
+          </div>
+          <div class="layer-title">网关层</div>
+          <div class="data-flow" style="top: 140px;">
+            <span class="flow-label">内部调用</span>
+            <span class="flow-arrow">↓</span>
+          </div>
+        </div>
+
+        <!-- Service Layer -->
+        <div class="layer layer--service">
+          <div class="component-group">
+            <div class="component">
+              <div class="component-name">ConfigService</div>
+              <div class="component-desc">实验配置管理</div>
+            </div>
+            <div class="component">
+              <div class="component-name">BucketingService</div>
+              <div class="component-desc">分桶计算</div>
+            </div>
+            <div class="component">
+              <div class="component-name">EventController</div>
+              <div class="component-desc">事件接收</div>
+            </div>
+            <div class="component">
+              <div class="component-name">Kafka Producer</div>
+              <div class="component-desc">消息推送</div>
+            </div>
+          </div>
+          <div class="layer-title">服务层</div>
+          <div class="data-flow" style="top: 200px;">
+            <span class="flow-label">写入</span>
+            <span class="flow-arrow">↓</span>
+          </div>
+        </div>
+
+        <!-- Data Layer -->
+        <div class="layer layer--data">
+          <div class="component-group">
+            <div class="component">
+              <div class="component-name">MySQL</div>
+              <div class="component-desc">实验/变体/分层</div>
+            </div>
+            <div class="component">
+              <div class="component-name">Redis</div>
+              <div class="component-desc">配置缓存</div>
+            </div>
+            <div class="component">
+              <div class="component-name">ClickHouse</div>
+              <div class="component-desc">事件分析</div>
+            </div>
+            <div class="component">
+              <div class="component-name">Kafka</div>
+              <div class="component-desc">消息管道</div>
+            </div>
+          </div>
+          <div class="layer-title">数据层</div>
+        </div>
+      </div>
+
+      <!-- Bottom Section -->
+      <div class="bottom-section">
+        <!-- API List -->
+        <div class="section-box">
+          <div class="section-title">SDK API 接口</div>
+          <div class="section-list">
+            <div class="section-item">
+              <span class="section-method">GET /api/v1/config/fetch</span>
+              <span class="section-desc">拉取实验配置</span>
+            </div>
+            <div class="section-item">
+              <span class="section-method">GET /api/v1/config/version</span>
+              <span class="section-desc">检查版本增量</span>
+            </div>
+            <div class="section-item">
+              <span class="section-method">POST /api/v1/events</span>
+              <span class="section-desc">批量上报事件</span>
+            </div>
+            <div class="section-item">
+              <span class="section-method">GET /api/v1/experiments</span>
+              <span class="section-desc">查询实验列表</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Data Flow -->
+        <div class="section-box">
+          <div class="section-title">核心数据流</div>
+          <div class="section-list">
+            <div class="section-item">
+              <span class="section-method">配置下发</span>
+              <span class="section-desc">服务端 → SDK (JSON)</span>
+            </div>
+            <div class="section-item">
+              <span class="section-method">本地分桶</span>
+              <span class="section-desc">Client计算 MurmurHash3</span>
+            </div>
+            <div class="section-item">
+              <span class="section-method">事件上报</span>
+              <span class="section-desc">SDK → Kafka</span>
+            </div>
+            <div class="section-item">
+              <span class="section-method">实时分析</span>
+              <span class="section-desc">ClickHouse 查询</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="notes-box">
+        <div class="notes-title">设计说明</div>
+        <div class="notes-content">
+          1. 客户端层：业务 App 使用 GateFlow SDK 的入口，通过 React Hook 与 SDK 交互<br/>
+          2. SDK 层：提供跨平台抽象，内部调用 Native Module 完成分桶和本地缓存<br/>
+          3. 网关层：统一的请求入口，负责鉴权、限流、路由<br/>
+          4. 服务层：核心业务逻辑，实验配置管理、分桶计算、事件接收<br/>
+          5. 数据层：MySQL 持久化实验元数据，Redis 缓存配置，Kafka+ClickHouse 处理事件分析
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
