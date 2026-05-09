@@ -304,3 +304,41 @@ export async function getDataDelayStatus(): Promise<{
   if (!res.ok) throw new Error('Failed to fetch data delay status');
   return res.json();
 }
+
+// ============================================
+// Event Details API
+// ============================================
+
+export interface EventDetail {
+  eventId: string;
+  eventType: string;
+  userId: string;
+  timestamp: string;
+  platform: string;
+  deviceId: string;
+  sessionId: string;
+  variant: string[];
+  layer: string[];
+  properties: string;
+}
+
+export interface GetEventDetailsParams {
+  expId: string;
+  limit?: number;
+  offset?: number;
+}
+
+/**
+ * 获取事件明细
+ */
+export async function getEventDetails(
+  params: GetEventDetailsParams
+): Promise<EventDetail[]> {
+  const searchParams = new URLSearchParams({ expId: params.expId });
+  if (params.limit) searchParams.set('limit', String(params.limit));
+  if (params.offset) searchParams.set('offset', String(params.offset));
+
+  const res = await fetch(`${API_BASE}/events?${searchParams}`);
+  if (!res.ok) throw new Error('Failed to fetch event details');
+  return res.json();
+}
