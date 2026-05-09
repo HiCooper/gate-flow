@@ -95,6 +95,17 @@ export function ExperimentDetailPage() {
       });
   }, [id]);
 
+  // Auto-fetch events when switching to events tab
+  useEffect(() => {
+    if (activeTab === 'events' && eventDetails.length === 0 && !loadingEvents && id) {
+      setLoadingEvents(true);
+      getEventDetails({ expId: id, limit: 100 })
+        .then(setEventDetails)
+        .catch(console.error)
+        .finally(() => setLoadingEvents(false));
+    }
+  }, [activeTab, id]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
