@@ -11,12 +11,8 @@ import {
   TrendingDown,
   Activity,
 } from 'lucide-react';
-import {
-  mockExperiments,
-  mockExperimentSummaries,
-  mockDashboardStats,
-} from '../api/mockData';
-import type { Experiment, ExperimentSummary, ExperimentStatus } from '../types';
+import { listExperiments } from '../api/experiment';
+import type { Experiment, ExperimentStatus } from '../types';
 
 const STATUS_CONFIG: Record<ExperimentStatus, { icon: typeof Clock; color: string; bgColor: string; label: string }> = {
   draft: { icon: Clock, color: 'text-slate-600', bgColor: 'bg-slate-100', label: '草稿' },
@@ -29,31 +25,38 @@ const STATUS_CONFIG: Record<ExperimentStatus, { icon: typeof Clock; color: strin
 export function ExperimentsPage() {
   const navigate = useNavigate();
   const [experiments, setExperiments] = useState<Experiment[]>([]);
-  const [summaries, setSummaries] = useState<ExperimentSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<ExperimentStatus | 'all'>('all');
-  const [showSRMOnly, setShowSRMOnly] = useState(false);
 
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setExperiments(mockExperiments);
-      setSummaries(mockExperimentSummaries);
-      setLoading(false);
-    }, 300);
+    listExperiments({ pageSize: 100 })
+      .then((result) => {
+        setExperiments(result.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('Failed to fetch experiments:', err);
+        setLoading(false);
+      });
   }, []);
 
   const filteredExperiments = experiments.filter((exp) => {
     const matchesSearch = exp.name.toLowerCase().includes(search.toLowerCase()) ||
       exp.expKey.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === 'all' || exp.status === statusFilter;
-    const summary = summaries.find((s) => s.id === exp.id);
-    const matchesSRM = !showSRMOnly || (summary?.hasSRM ?? false);
-    return matchesSearch && matchesStatus && matchesSRM;
+    return matchesSearch && matchesStatus;
   });
 
-  const stats = mockDashboardStats;
+  // Compute stats from real data
+  const stats = {
+    totalExperiments: experiments.length,
+    activeExperiments: experiments.filter(e => e.status === 'running').length,
+    completedThisWeek: experiments.filter(e => e.status === 'completed').length,
+    significantPositive: 0,
+    significantNegative: 0,
+    srmAlerts: 0,
+  };
 
   return (
     <div className="space-y-6">
@@ -134,16 +137,6 @@ export function ExperimentsPage() {
           <option value="paused">已暂停</option>
           <option value="draft">草稿</option>
         </select>
-
-        <label className="flex items-center gap-2 text-sm cursor-pointer">
-          <input
-            type="checkbox"
-            checked={showSRMOnly}
-            onChange={(e) => setShowSRMOnly(e.target.checked)}
-            className="w-4 h-4 rounded border-slate-300 text-red-600 focus:ring-red-500"
-          />
-          <span className="text-slate-700 dark:text-slate-300">仅显示 SRM 异常</span>
-        </label>
       </div>
 
       {/* Experiments List */}
@@ -158,7 +151,6 @@ export function ExperimentsPage() {
           </div>
         ) : (
           filteredExperiments.map((exp) => {
-            const summary = summaries.find((s) => s.id === exp.id);
             const statusConfig = STATUS_CONFIG[exp.status];
             const StatusIcon = statusConfig.icon;
 
@@ -180,12 +172,6 @@ export function ExperimentsPage() {
                         <StatusIcon className="w-3 h-3" />
                         {statusConfig.label}
                       </span>
-                      {summary?.hasSRM && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-600">
-                          <AlertTriangle className="w-3 h-3" />
-                          SRM 异常
-                        </span>
-                      )}
                     </div>
                     <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
                       {exp.description}
@@ -206,17 +192,7 @@ export function ExperimentsPage() {
                   </div>
 
                   <div className="flex flex-col items-end gap-2">
-                    {summary && exp.status === 'completed' && (
-                      <div className="text-right">
-                        <div className={`text-lg font-semibold ${summary.isSignificant ? (summary.isPositive ? 'text-emerald-600' : 'text-red-600') : 'text-slate-600'}`}>
-                          {summary.isPositive ? '+' : ''}{summary.lift.toFixed(1)}%
-                        </div>
-                        <div className="text-xs text-slate-500">
-                          {summary.isSignificant ? '统计显著' : '不显著'}
-                        </div>
-                      </div>
-                    )}
-                    {summary && exp.status === 'running' && (
+                    {exp.status === 'running' && (
                       <div className="flex items-center gap-2">
                         <Link
                           to={`/experiments/${exp.id}`}
@@ -232,6 +208,7 @@ export function ExperimentsPage() {
                 </div>
 
                 {/* Variants Preview */}
+                {exp.variants.length > 0 && (
                 <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
                   <div className="flex items-center gap-6">
                     {exp.variants.map((variant) => (
@@ -250,6 +227,7 @@ export function ExperimentsPage() {
                     ))}
                   </div>
                 </div>
+                )}
               </div>
             );
           })

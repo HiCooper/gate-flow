@@ -24,22 +24,15 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts';
-import {
-  mockExperiments,
-  mockSRMCheckPassed,
-  mockSRMCheckFailed,
-  mockPrimaryMetrics,
-  mockGuardrailMetrics,
-  mockTrafficDiagnosis,
-  mockTrafficAlerts,
-  mockRealtimeMetrics,
-} from '../api/mockData';
-import type { Experiment, SRMCheckResult, GuardrailCheck, TrafficDiagnosis, TrafficAlert } from '../types';
+import { getExperiment, getExperimentVariants } from '../api/experiment';
+import { getRealtimeMetrics } from '../api/metrics';
+import type { Experiment, SRMCheckResult, GuardrailCheck, TrafficDiagnosis, TrafficAlert, VariantRealtimeMetrics } from '../types';
 
 export function ExperimentDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [experiment, setExperiment] = useState<Experiment | null>(null);
+  const [realtimeMetrics, setRealtimeMetrics] = useState<VariantRealtimeMetrics[]>([]);
   const [srmCheck, setSRMCheck] = useState<SRMCheckResult | null>(null);
   const [guardrailMetrics, setGuardrailMetrics] = useState<GuardrailCheck[]>([]);
   const [trafficDiagnosis, setTrafficDiagnosis] = useState<TrafficDiagnosis | null>(null);
@@ -53,33 +46,35 @@ export function ExperimentDetailPage() {
   const [selectedTreatments, setSelectedTreatments] = useState<string[]>([]);
 
   useEffect(() => {
-    setTimeout(() => {
-      const exp = mockExperiments.find((e) => e.id === id);
-      setExperiment(exp || null);
-      
-      if (exp) {
-        const controlVariant = exp.variants.find(v => v.variantKey === 'control');
-        const treatmentVariants = exp.variants.filter(v => v.variantKey !== 'control');
+    if (!id) return;
+
+    // Fetch experiment detail and variants
+    Promise.all([
+      getExperiment(id),
+      getExperimentVariants(id),
+    ])
+      .then(([exp, variants]) => {
+        setExperiment({ ...exp, variants });
+
+        const controlVariant = variants.find(v => v.variantKey === 'control');
+        const treatmentVariants = variants.filter(v => v.variantKey !== 'control');
         setSelectedControl(controlVariant?.id || null);
         setSelectedTreatments(treatmentVariants.map(v => v.id));
-      }
 
-      const srmResult = exp?.id === '2' ? mockSRMCheckFailed : mockSRMCheckPassed;
-      setSRMCheck(srmResult);
-      setGuardrailMetrics(mockGuardrailMetrics);
-      
-      if (exp) {
-        setTrafficDiagnosis({
-          ...mockTrafficDiagnosis,
-          experimentId: exp.id,
-          experimentName: exp.name,
-          srmCheck: srmResult,
-        });
-      }
-      setTrafficAlerts(mockTrafficAlerts);
-      
-      setLoading(false);
-    }, 300);
+        // Fetch realtime metrics
+        return getRealtimeMetrics({ expId: id, timeWindow: 1440 });
+      })
+      .then((metrics) => {
+        if (metrics) {
+          setRealtimeMetrics(metrics.variants || []);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to fetch experiment:', err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [id]);
 
   if (loading) {
@@ -324,7 +319,7 @@ export function ExperimentDetailPage() {
         <div className="space-y-6">
           {/* Stats Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {mockRealtimeMetrics.variants.map((variant) => (
+            {realtimeMetrics.map((variant) => (
               <div key={variant.variantKey} className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4">
                 <div className="text-sm text-slate-500 mb-1">{variant.variantName}</div>
                 <div className="text-2xl font-bold text-slate-900 dark:text-white">
@@ -355,7 +350,7 @@ export function ExperimentDetailPage() {
                     tickFormatter={(value) => `${value.toFixed(1)}%`}
                   />
                   <Tooltip formatter={(value: number) => [`${value.toFixed(2)}%`, '转化率']} />
-                  {mockRealtimeMetrics.variants.map((variant) => (
+                  {realtimeMetrics.map((variant) => (
                     <Line
                       key={variant.variantKey}
                       type="monotone"
@@ -785,21 +780,19 @@ export function ExperimentDetailPage() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="text-center p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-600">
                     <div className="text-sm text-slate-500">p-value</div>
-                    <div className="font-mono font-bold text-lg">{mockPrimaryMetrics[0]?.pValue?.toFixed(4) || '-'}</div>
+                    <div className="font-mono font-bold text-lg">-</div>
                   </div>
                   <div className="text-center p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-600">
                     <div className="text-sm text-slate-500">置信度</div>
-                    <div className="font-bold text-lg">{((mockPrimaryMetrics[0]?.confidenceLevel || 0) * 100).toFixed(0)}%</div>
+                    <div className="font-bold text-lg">-</div>
                   </div>
                   <div className="text-center p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-600">
                     <div className="text-sm text-slate-500">置信区间</div>
-                    <div className="font-mono text-sm">
-                      [{mockPrimaryMetrics[0]?.liftLowerCI?.toFixed(1)}%, {mockPrimaryMetrics[0]?.liftUpperCI?.toFixed(1)}%]
-                    </div>
+                    <div className="font-mono text-sm">-</div>
                   </div>
                   <div className="text-center p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-600">
                     <div className="text-sm text-slate-500">检验方法</div>
-                    <div className="font-medium">{mockPrimaryMetrics[0]?.testMethod?.toUpperCase() || '-'}</div>
+                    <div className="font-medium">-</div>
                   </div>
                 </div>
               </div>
