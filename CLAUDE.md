@@ -11,22 +11,25 @@ GateFlow is an A/B experimentation platform ("Victor" / 维克托) consisting of
 ```
 gate-flow/
 ├── apps/
-│   ├── marketing/          # GateFlow marketing site (@gate-flow/marketing)
-│   ├── admin/              # Admin dashboard (@gate-flow/admin)
-│   └── victor-mng-front/   # AB experiment mgmt UI (Figma-generated, separate pkg)
+│   ├── admin/           # Admin dashboard (git submodule: HiCooper/superab-admin)
+│   ├── marketing/       # Marketing site (git submodule: HiCooper/superab-marketing)
+│   ├── readmore/        # @gate-flow/readmore app (not a submodule)
+│   └── ds-platform/     # ds-platform app (not a submodule)
 ├── packages/
-│   └── shared/             # Shared UI tokens, hooks, utils, components
+│   └── shared/          # @gate-flow/shared — shared UI tokens, hooks, utils, components
 ├── backend/
-│   └── victor-service/     # Java Spring Boot multi-module Maven project
-└── package.json            # Root pnpm workspace manifest
+│   └── victor-ab/       # Java Spring Boot multi-module Maven project (git submodule)
+└── package.json         # Root pnpm workspace manifest
 ```
+
+**Note:** `apps/admin`, `apps/marketing`, and `backend/victor-ab` are git submodules pointing to separate repositories. `apps/readmore` and `apps/ds-platform` are regular directories in this repo.
 
 ## Frontend
 
 ### Tech Stack
 - React 18 + TypeScript + Vite
 - Tailwind CSS v4 (uses `@import "tailwindcss"` and `@theme` blocks, no `tailwind.config.js`)
-- React Router v6 (marketing/admin) / React Router v7 (victor-mng-front)
+- React Router v6
 - pnpm workspaces with `@gate-flow/shared` internal package
 
 ### Workspace Commands
@@ -34,6 +37,7 @@ Run from repo root:
 - `pnpm dev` — start all frontend apps in parallel
 - `pnpm dev:marketing` — start marketing site only (port 3000)
 - `pnpm dev:admin` — start admin dashboard only (port 3001)
+- `pnpm dev:readmore` — start readmore app
 - `pnpm build` — build all frontend packages/apps
 - `pnpm typecheck` — run `tsc --noEmit` across workspace
 - `pnpm lint` — runs stub `echo ok` in most packages
@@ -49,7 +53,7 @@ Run from individual app directories:
 ### Per-App Notes
 
 **`apps/admin`** (port 3001)
-- Dark-themed dashboard for paywall/experiment management.
+- Dark-themed dashboard for experiment management.
 - State management via zustand with domain-specific stores in `src/stores/`
 - Uses `@dnd-kit/core` and `@dnd-kit/sortable` for drag-and-drop.
 - Uses `recharts` for analytics charts.
@@ -58,11 +62,12 @@ Run from individual app directories:
 - Landing site with docs, pricing, blog, customers pages.
 - Static data files in `src/data/`.
 
-**`apps/victor-mng-front`**
-- Figma-generated AB experiment management UI with its own `package.json` (name `@figma/my-make-file`).
-- Uses Radix UI primitives and a full `src/app/components/ui/` component library (shadcn/ui style).
-- Has a custom Vite plugin `figmaAssetResolver()` for `figma:asset/*` imports.
-- Uses React Router v7 (`createBrowserRouter` from `react-router`).
+**`apps/readmore`** (port )
+- Uses `@gate-flow/shared`.
+- Uses React Router v6.
+
+**`apps/ds-platform`** (port )
+- Uses React Router v6, recharts, lucide-react.
 
 ### Frontend Conventions
 - Tailwind CSS v4 configuration lives in CSS files via `@theme` and `@import "tailwindcss"`.
@@ -97,7 +102,7 @@ Run from individual app directories:
 
 ### Build & Run Commands
 
-From `backend/victor-service/`:
+From `backend/victor-ab/`:
 - `mvn clean package` — build all modules
 - `mvn clean package -DskipTests` — build without tests
 - `mvn test` — run all tests
@@ -106,7 +111,7 @@ From `backend/victor-service/`:
 - `mvn spring-boot:run -pl victor-web` — run the application
 
 Docker:
-- `docker-compose up` from `backend/victor-service/` spins up MySQL, Redis, and the service.
+- `docker-compose up` from `backend/victor-ab/` spins up MySQL, Redis, and the service.
 
 ### Application Config
 
@@ -152,6 +157,6 @@ REST controllers in `victor-web` under `/api/v1/`:
 
 ## Development Workflow
 
-1. Start infrastructure: `docker-compose up mysql redis` from `backend/victor-service/`
-2. Start backend: `mvn spring-boot:run -pl victor-web` from `backend/victor-service/`
+1. Start infrastructure: `docker-compose up mysql redis` from `backend/victor-ab/`
+2. Start backend: `mvn spring-boot:run -pl victor-web` from `backend/victor-ab/`
 3. Start frontend(s): `pnpm dev:admin` or `pnpm dev:marketing` from repo root
