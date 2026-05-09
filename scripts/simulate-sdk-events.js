@@ -55,13 +55,13 @@ function generateSessionId() {
 
 function generateProperties(eventType, variant) {
   if (eventType === 'exposure') {
-    return JSON.stringify({ page: 'paywall', position: randomInt(1, 5) });
+    return { page: 'paywall', position: randomInt(1, 5) };
   } else if (eventType === 'click') {
-    return JSON.stringify({ button: randomChoice(['subscribe', 'upgrade', 'trial', 'cancel']), variant });
+    return { button: randomChoice(['subscribe', 'upgrade', 'trial', 'cancel']), variant };
   } else if (eventType === 'conversion') {
-    return JSON.stringify({ plan: randomChoice(['monthly', 'yearly']), amount: randomInt(9, 99) });
+    return { plan: randomChoice(['monthly', 'yearly']), amount: randomInt(9, 99) };
   }
-  return JSON.stringify({});
+  return {};
 }
 
 function generateEvent(expId) {
@@ -69,14 +69,14 @@ function generateEvent(expId) {
   const variant = randomChoice(VARIANTS);
   const layer = randomChoice(LAYERS);
 
-  // Generate timestamp within last hour
-  const timestamp = new Date(Date.now() - randomInt(0, 3600 * 1000));
+  // Generate timestamp within last hour (epoch milliseconds for backend)
+  const timestamp = Date.now() - randomInt(0, 3600 * 1000);
 
   return {
     eventId: generateEventId(),
     eventType,
     userId: generateUserId(),
-    timestamp: timestamp.toISOString(),
+    timestamp,  // epoch milliseconds
     experimentTags: [
       {
         expId,
