@@ -65,8 +65,23 @@ export function ExperimentDetailPage() {
         return getRealtimeMetrics({ expId: id, timeWindow: 1440 });
       })
       .then((metrics) => {
-        if (metrics) {
+        if (metrics && 'variants' in metrics) {
+          // API returns { variants: [...] } format
           setRealtimeMetrics(metrics.variants || []);
+        } else if (Array.isArray(metrics)) {
+          // API returns array of per-variant metrics
+          const variantMetrics: VariantRealtimeMetrics[] = metrics.map((m: any) => ({
+            variantKey: m.variant,
+            variantName: m.variant,
+            sampleSize: m.uniqueUsers,
+            uniqueUsers: m.uniqueUsers,
+            totalEvents: m.totalEvents,
+            conversions: m.conversions,
+            conversionRate: m.conversionRate,
+            revenue: m.totalRevenue,
+            trend: [],
+          }));
+          setRealtimeMetrics(variantMetrics);
         }
       })
       .catch((err) => {
@@ -319,57 +334,76 @@ export function ExperimentDetailPage() {
         <div className="space-y-6">
           {/* Stats Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {realtimeMetrics.map((variant) => (
-              <div key={variant.variantKey} className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4">
-                <div className="text-sm text-slate-500 mb-1">{variant.variantName}</div>
-                <div className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {variant.sampleSize.toLocaleString()}
-                </div>
-                <div className="text-sm text-slate-500">样本量</div>
+            {realtimeMetrics.length === 0 ? (
+              <div className="col-span-4 text-center py-8 text-slate-500">
+                暂无实时数据
               </div>
-            ))}
+            ) : (
+              realtimeMetrics.map((variant) => (
+                <div key={variant.variantKey} className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4">
+                  <div className="text-sm text-slate-500 mb-1">{variant.variantName}</div>
+                  <div className="text-2xl font-bold text-slate-900 dark:text-white">
+                    {variant.sampleSize.toLocaleString()}
+                  </div>
+                  <div className="text-sm text-slate-500">样本量</div>
+                  <div className="mt-2 pt-2 border-t border-slate-100 text-xs text-slate-400 space-y-1">
+                    <div>事件数: {variant.totalEvents}</div>
+                    <div>转化数: {variant.conversions}</div>
+                    <div>转化率: {(variant.conversionRate * 100).toFixed(2)}%</div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
 
-          {/* Trend Chart */}
-          <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6">
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
-              实时趋势
-            </h2>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis
-                    dataKey="time"
-                    tick={{ fontSize: 12 }}
-                    stroke="#94a3b8"
-                  />
-                  <YAxis
-                    tick={{ fontSize: 12 }}
-                    stroke="#94a3b8"
-                    tickFormatter={(value) => `${value.toFixed(1)}%`}
-                  />
-                  <Tooltip formatter={(value: number) => [`${value.toFixed(2)}%`, '转化率']} />
-                  {realtimeMetrics.map((variant) => (
-                    <Line
-                      key={variant.variantKey}
-                      type="monotone"
-                      data={variant.trend.map((p) => ({
-                        time: format(new Date(p.timestamp), 'HH:mm'),
-                        value: p.value,
-                      }))}
-                      dataKey="value"
-                      stroke={variant.variantKey === 'control' ? '#64748b' : '#6366f1'}
-                      strokeWidth={2}
-                      dot={false}
-                      name={variant.variantName}
+          {/* Trend Chart - only show if we have trend data */}
+          {realtimeMetrics.some(v => v.trend.length > 0) ? (
+            <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+                实时趋势
+              </h2>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                    <XAxis
+                      dataKey="time"
+                      tick={{ fontSize: 12 }}
+                      stroke="#94a3b8"
                     />
-                  ))}
-                  <Legend />
-                </LineChart>
-              </ResponsiveContainer>
+                    <YAxis
+                      tick={{ fontSize: 12 }}
+                      stroke="#94a3b8"
+                      tickFormatter={(value) => `${value.toFixed(1)}%`}
+                    />
+                    <Tooltip formatter={(value: number) => [`${value.toFixed(2)}%`, '转化率']} />
+                    {realtimeMetrics.map((variant) => (
+                      <Line
+                        key={variant.variantKey}
+                        type="monotone"
+                        data={variant.trend.map((p) => ({
+                          time: format(new Date(p.timestamp), 'HH:mm'),
+                          value: p.value,
+                        }))}
+                        dataKey="value"
+                        stroke={variant.variantKey === 'control' ? '#64748b' : '#6366f1'}
+                        strokeWidth={2}
+                        dot={false}
+                        name={variant.variantName}
+                      />
+                    ))}
+                    <Legend />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6 text-center">
+              <div className="text-slate-500 py-4">
+                暂无趋势数据。趋势数据需要事件携带时间戳并在多个时间点有数据。
+              </div>
+            </div>
+          )}
         </div>
       )}
 
