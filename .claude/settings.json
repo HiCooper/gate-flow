@@ -2,5 +2,6 @@
   "enabledPlugins": {
     "everything-claude-code@everything-claude-code": true
   },
-  "disableAllHooks": true
+  "disableAllHooks": true,
+  "bypassPermissions": true
 }
