@@ -220,6 +220,9 @@ pnpm dev
 # 或单独启动
 pnpm dev:admin      # 启动管理控制台
 pnpm dev:marketing  # 启动营销页面
+
+# 启动文档网站
+pnpm docs:dev       # 启动文档开发服务器
 ```
 
 前端应用地址：
@@ -271,12 +274,27 @@ docker-compose logs -f victor-service
 
 ## 📚 文档
 
-### 核心文档
+### 文档网站 (推荐)
+
+GateFlow 提供基于 VitePress 构建的文档网站，面向产品和技术两类用户:
+
+- **📘 产品指南**: [https://your-docs-site/guide/](docs/docs-site/guide/) - 面向产品经理、运营人员
+- **💻 技术文档**: [https://your-docs-site/dev/](docs/docs-site/dev/) - 面向开发工程师
+- **📚 内部知识**: [https://your-docs-site/knowledge/](docs/docs-site/knowledge/) - 团队共享知识
+
+本地启动文档网站:
+```bash
+pnpm docs:dev     # 启动文档开发服务器
+pnpm docs:build   # 构建生产版本
+```
+
+### 原始文档
 
 - **[AB实验平台设计方案](docs/ab/ab_experiment_platform_design.md)** - 完整的平台设计和架构说明
 - **[系统架构设计](docs/ab/ab_experiment_system_architecture.html)** - 技术架构详解
-- **[实施计划](docs/ab/implementation_plan.md)** - 项目实施路线图
-- **[增强进度](docs/ab/enhancement_progress.md)** - 功能增强进展
+- **[客户端 SDK 架构](docs/native-sdk-architecture-plan.md)** - iOS/Android SDK 架构设计
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - 如何贡献代码和文档
+- **[CHANGELOG.md](CHANGELOG.md)** - 版本变更记录
 
 ### 知识库
 

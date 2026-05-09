@@ -1,0 +1,15 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "GateFlow API",
+    "version": "1.0.0",
+    "description": "GateFlow A/B Testing Platform API. Start the backend service to generate full API documentation."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Local development server"
+    }
+  ],
+  "paths": {}
+}

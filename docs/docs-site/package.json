@@ -1,0 +1,20 @@
+{
+  "name": "@gate-flow/docs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview",
+    "generate:openapi": "node scripts/generate-openapi.js",
+    "generate:all": "pnpm generate:openapi",
+    "build:all": "pnpm generate:all && vitepress build"
+  },
+  "devDependencies": {
+    "@types/markdown-it": "^14.1.2",
+    "markdown-it": "^14.1.0",
+    "mermaid": "^11.14.0",
+    "vitepress": "^1.5.0",
+    "vitepress-plugin-mermaid": "^2.0.17"
+  }
+}
