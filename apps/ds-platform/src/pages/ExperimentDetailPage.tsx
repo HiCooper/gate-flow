@@ -106,6 +106,32 @@ export function ExperimentDetailPage() {
     }
   }, [activeTab, id]);
 
+  // Auto-fetch realtime metrics when switching to traffic or realtime tab
+  useEffect(() => {
+    if ((activeTab === 'traffic' || activeTab === 'realtime') && id) {
+      getRealtimeMetrics({ expId: id, timeWindow: 1440 })
+        .then((metrics) => {
+          if (metrics && 'variants' in metrics) {
+            setRealtimeMetrics(metrics.variants || []);
+          } else if (Array.isArray(metrics)) {
+            const variantMetrics: VariantRealtimeMetrics[] = metrics.map((m: any) => ({
+              variantKey: m.variant,
+              variantName: m.variant,
+              sampleSize: m.uniqueUsers,
+              uniqueUsers: m.uniqueUsers,
+              totalEvents: m.totalEvents,
+              conversions: m.conversions,
+              conversionRate: m.conversionRate,
+              revenue: m.totalRevenue,
+              trend: [],
+            }));
+            setRealtimeMetrics(variantMetrics);
+          }
+        })
+        .catch(console.error);
+    }
+  }, [activeTab, id]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -577,7 +603,9 @@ export function ExperimentDetailPage() {
                   <YAxis tick={{ fontSize: 12 }} stroke="#94a3b8" tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v} />
                   <Tooltip formatter={(v: number) => [v.toLocaleString(), '曝光 PV']} />
                   {experiment.variants.map((v, idx) => {
-                    const expPv = v.metrics?.exposurePv || 0;
+                    // Get metrics from realtime data or use 0
+                    const realtimeVariant = realtimeMetrics.find(m => m.variantKey === v.variantKey);
+                    const expPv = realtimeVariant?.totalEvents || 0;
                     return (
                       <Line
                         key={v.id}
@@ -587,7 +615,7 @@ export function ExperimentDetailPage() {
                           date.setDate(date.getDate() - (trafficDays - 1 - i));
                           const basePv = expPv / trafficDays;
                           const variance = (Math.random() - 0.5) * 0.2 * basePv;
-                          return { date: format(date, 'MM-dd'), value: Math.round(basePv + variance) };
+                          return { date: format(date, 'MM-dd'), value: Math.round(Math.max(0, basePv + variance)) };
                         })}
                         dataKey="value"
                         stroke={v.isControl ? '#64748b' : `hsl(${220 + idx * 30}, 70%, 50%)`}
