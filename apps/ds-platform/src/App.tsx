@@ -1,15 +1,24 @@
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom';
 import {
   FlaskConical,
+  BarChart3,
+  Bell,
+  GitCompare,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
 // Pages
 import { ExperimentsPage } from './pages/ExperimentsPage';
 import { ExperimentDetailPage } from './pages/ExperimentDetailPage';
+import { PowerAnalysisPage } from './pages/PowerAnalysisPage';
+import { MonitoringPage } from './pages/MonitoringPage';
+import { BayesianPage } from './pages/BayesianPage';
 
 const NAV_ITEMS = [
   { path: '/', label: '实验概览', icon: FlaskConical },
+  { path: '/power', label: '功效分析', icon: BarChart3 },
+  { path: '/monitoring', label: '监控告警', icon: Bell },
+  { path: '/bayesian', label: '贝叶斯分析', icon: GitCompare },
 ];
 
 function App() {
@@ -66,6 +75,12 @@ function App() {
               <Route path="/" element={<ExperimentsPage />} />
               <Route path="/experiments" element={<ExperimentsPage />} />
               <Route path="/experiments/:id" element={<ExperimentDetailPage />} />
+              {/* Power Analysis */}
+              <Route path="/power" element={<PowerAnalysisPage />} />
+              {/* Monitoring */}
+              <Route path="/monitoring" element={<MonitoringPage />} />
+              {/* Bayesian Analysis */}
+              <Route path="/bayesian" element={<BayesianPage />} />
             </Routes>
           </div>
         </main>
