@@ -3,6 +3,7 @@ import { useShallow } from "zustand/shallow"
 import type { PartialGateFlowOptions } from "./GateFlowOptions"
 import { GateFlowContext, useGateFlowStore } from "./useGateFlow"
 import { useGateFlowEvents } from "./useGateFlowEvents"
+import { useNetworkStatus } from "./offline"
 
 interface GateFlowProviderProps {
   /** GateFlow API base URL, e.g. "http://localhost:8080" */
@@ -45,6 +46,15 @@ export function GateFlowProvider({
       configurationError: state.configurationError,
     })),
   )
+
+  // Network status monitoring for offline fallback
+  const isOnline = useNetworkStatus()
+  const _setOnlineStatus = useGateFlowStore((state) => state._setOnlineStatus)
+
+  // Sync network status to store (triggers retry when back online)
+  useEffect(() => {
+    _setOnlineStatus(isOnline)
+  }, [isOnline, _setOnlineStatus])
 
   // Handle configuration events
   useGateFlowEvents({

@@ -28,3 +28,6 @@ export * from "./useExperiment"
 // Events
 export * from "./useGateFlowEvents"
 export type { GateFlowEventCallbacks } from "./GateFlowEventCallbacks"
+
+// Offline fallback
+export * from "./offline"

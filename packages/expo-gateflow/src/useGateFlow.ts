@@ -9,6 +9,13 @@ import type {
   UserAttributes,
 } from "./GateFlowExpoModule.types"
 import { DefaultGateFlowOptions, type PartialGateFlowOptions } from "./GateFlowOptions"
+import {
+  saveConfig,
+  loadConfig,
+  getOfflineResult,
+  enqueueEvent,
+  retryPending,
+} from "./offline"
 
 /**
  * Defines the structure of the GateFlow store, including state and actions.
@@ -26,6 +33,12 @@ export interface GateFlowStore {
   user: UserAttributes | null
   /** Active experiments keyed by experiment key */
   activeExperiments: Record<string, Experiment>
+  /** API base URL (stored for offline access) */
+  apiUrl: string
+  /** Whether device is online */
+  isOnline: boolean
+  /** Cached experiments for offline mode */
+  cachedExperiments: Record<string, Experiment>
 
   /* -------------------- Actions -------------------- */
   /**
@@ -86,6 +99,9 @@ export interface GateFlowStore {
   /* -------------------- Internal -------------------- */
   /** Initialize native event listeners. Called internally by GateFlowProvider. */
   _initListeners: () => () => void
+
+  /** Set network online status and retry pending events */
+  _setOnlineStatus: (online: boolean) => Promise<void>
 }
 
 /**
@@ -98,10 +114,13 @@ export const useGateFlowStore = create<GateFlowStore>((set, get) => ({
   configurationError: null,
   user: null,
   activeExperiments: {},
+  apiUrl: "",
+  isOnline: true,
+  cachedExperiments: {},
 
   /* -------------------- Actions -------------------- */
   configure: async (apiUrl, apiKey, options) => {
-    set({ isLoading: true, configurationError: null })
+    set({ isLoading: true, configurationError: null, apiUrl })
 
     try {
       const mergedOptions = {
@@ -117,11 +136,31 @@ export const useGateFlowStore = create<GateFlowStore>((set, get) => ({
 
       const currentUser = await GateFlowExpoModule.getUserAttributes()
 
+      // Load cached experiments for offline mode
+      const cached = await loadConfig()
+      const cachedExperiments: Record<string, Experiment> = {}
+      if (cached) {
+        for (const key in cached.experiments) {
+          const exp = cached.experiments[key]
+          cachedExperiments[key] = {
+            id: exp.id,
+            key: exp.key,
+            layerId: exp.layerId,
+            variant: {
+              key: exp.defaultVariantKey,
+              type: exp.defaultVariantKey === "control" ? "CONTROL" : "TREATMENT",
+              params: exp.variants[0]?.params || {},
+            },
+          }
+        }
+      }
+
       set({
         isConfigured: true,
         isLoading: false,
         configurationError: null,
         user: currentUser as UserAttributes,
+        cachedExperiments,
       })
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error)
@@ -152,37 +191,72 @@ export const useGateFlowStore = create<GateFlowStore>((set, get) => ({
   },
 
   evaluateExperiment: async (placementKey, params, handlerId = "default") => {
-    const result = await GateFlowExpoModule.evaluateExperiment(
-      placementKey,
-      params,
-      handlerId,
-    )
+    const { isOnline, apiUrl } = get()
 
-    // Update active experiments if matched
-    if (result.type === "matched" || result.type === "holdout") {
-      const exp = result.experiment
-      set((state) => ({
-        activeExperiments: {
-          ...state.activeExperiments,
-          [exp.key]: exp,
-        },
-      }))
+    // Try online evaluation first
+    if (isOnline) {
+      try {
+        const result = await GateFlowExpoModule.evaluateExperiment(
+          placementKey,
+          params,
+          handlerId,
+        )
+
+        // Update active experiments if matched
+        if (result.type === "matched" || result.type === "holdout") {
+          const exp = result.experiment
+          set((state) => ({
+            activeExperiments: {
+              ...state.activeExperiments,
+              [exp.key]: exp,
+            },
+          }))
+        }
+
+        // Cache the experiment config
+        if (result.type === "matched") {
+          await saveConfig(apiUrl, "", { [result.experiment.key]: result.experiment }, "v1")
+        }
+
+        return result
+      } catch (error) {
+        console.warn("[GateFlow] Online evaluation failed, trying offline", error)
+      }
     }
 
-    return result
+    // Offline fallback: use cached result
+    const offlineResult = await getOfflineResult(placementKey)
+    if (offlineResult) {
+      return offlineResult
+    }
+
+    return { type: "noMatch" }
   },
 
   trackEvent: async (event) => {
-    const user = get().user
+    const { user, isOnline } = get()
     if (!user) {
       console.warn("[GateFlow] Cannot track event: no user identified")
       return
     }
 
-    await GateFlowExpoModule.trackEvent({
+    const fullEvent = {
       ...event,
       userId: user.userId,
-    })
+    }
+
+    if (isOnline) {
+      try {
+        await GateFlowExpoModule.trackEvent(fullEvent)
+      } catch (error) {
+        // Fallback: queue event for later
+        console.warn("[GateFlow] Event track failed, queuing", error)
+        await enqueueEvent(fullEvent)
+      }
+    } else {
+      // Offline: queue event
+      await enqueueEvent(fullEvent)
+    }
   },
 
   setUserAttributes: async (attrs) => {
@@ -245,6 +319,17 @@ export const useGateFlowStore = create<GateFlowStore>((set, get) => ({
     return (): void => {
       console.log("[GateFlow] Cleaning up listeners", subscriptions.length)
       subscriptions.forEach((s) => s.remove())
+    }
+  },
+
+  _setOnlineStatus: async (online: boolean) => {
+    const { apiUrl } = get()
+    set({ isOnline: online })
+    console.log("[GateFlow] Network status:", online ? "online" : "offline")
+
+    // When back online, retry pending events
+    if (online && apiUrl) {
+      await retryPending(apiUrl)
     }
   },
 }))

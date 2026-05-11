@@ -134,6 +134,7 @@ export default withMermaid(defineConfig({
           text: '贡献指南',
           items: [
             { text: '如何贡献', link: '/dev/contributing/' },
+            { text: 'Git Submodule', link: '/dev/contributing/git-submodule' },
             { text: 'PR 工作流', link: '/dev/contributing/pr-workflow' },
             { text: '提交规范', link: '/dev/contributing/commit-conventions' },
           ],

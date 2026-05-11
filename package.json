@@ -6,7 +6,6 @@
     "dev:marketing": "pnpm --filter @gate-flow/marketing dev",
     "dev:admin": "pnpm --filter @gate-flow/admin dev",
     "dev:readmore": "pnpm --filter @gate-flow/readmore dev",
-    "dev:ds": "pnpm --filter @gate-flow/ds-platform dev",
     "docs:dev": "pnpm --filter @gate-flow/docs dev",
     "docs:build": "pnpm --filter @gate-flow/docs build:all",
     "docs:preview": "pnpm --filter @gate-flow/docs preview",
