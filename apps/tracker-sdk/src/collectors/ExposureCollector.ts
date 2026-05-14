@@ -44,19 +44,20 @@ export class ExposureCollector {
   private handleIntersection(entries: IntersectionObserverEntry[]): void {
     entries.forEach((entry) => {
       const el = entry.target as HTMLElement;
-      const exposureId = el.dataset.exposure;
+      const trackId = el.dataset.trackId;
 
       if (entry.isIntersecting) {
-        // Element became visible
+        // Element became visible - record start time
+        el.dataset.exposureStart = Date.now().toString();
         this.exposedElements.set(el, Date.now());
       } else if (el.dataset.exposureStart) {
-        // Element became hidden
+        // Element became hidden - calculate duration and send event
         const startTime = parseInt(el.dataset.exposureStart, 10);
         const duration = Date.now() - startTime;
 
         if (duration >= this.config.threshold) {
           this.callback({
-            elementId: exposureId,
+            elementId: trackId,
             elementType: el.tagName.toLowerCase(),
             elementText: el.textContent?.slice(0, 100) || '',
             exposureDuration: duration,

@@ -241,7 +241,311 @@ class ExposureCollector implements Collector {
 }
 ```
 
-### 2.4 离线队列
+### 2.5 曝光事件上报机制
+
+本节详细说明 tracker-sdk 的曝光事件采集与上报逻辑，包括双阈值判断机制和批量合并策略。
+
+#### 2.5.1 曝光事件触发条件
+
+曝光事件需要同时满足以下两个条件才会触发上报：
+
+| 条件 | 配置参数 | 默认值 | 说明 |
+|------|----------|--------|------|
+| **可见比例阈值** | `thresholdRatio` | **50%** | 元素在视口中可见面积需达到 50% |
+| **曝光时长阈值** | `threshold` | **500ms** | 元素需持续可见至少 500 毫秒 |
+
+```typescript
+// 曝光配置示例
+const exposureConfig = {
+  enabled: true,
+  selector: ['[data-exposure]'],    // 监听带有 data-exposure 属性的元素
+  threshold: 500,                  // 曝光时长阈值（毫秒）
+  thresholdRatio: 0.5,             // 可见比例阈值（50%）
+};
+```
+
+#### 2.5.2 曝光采集器核心逻辑
+
+曝光采集器使用 `IntersectionObserver` API 监听元素可见性变化，实现如下：
+
+```typescript
+// src/collectors/ExposureCollector.ts
+class ExposureCollector {
+  private observer: IntersectionObserver | null = null;
+  private exposedElements: Map<Element, number> = new Map();  // 记录曝光开始时间
+
+  start(): void {
+    if (!this.config.enabled) return;
+
+    // 创建 IntersectionObserver
+    this.observer = new IntersectionObserver(
+      this.handleIntersection.bind(this),
+      {
+        threshold: this.config.thresholdRatio,  // 0.5 = 50%
+        rootMargin: '0px',
+      }
+    );
+
+    // 监听所有标记的元素
+    const elements = document.querySelectorAll(this.config.selector.join(','));
+    elements.forEach((el) => this.observer?.observe(el));
+  }
+
+  private handleIntersection(entries: IntersectionObserverEntry[]): void {
+    entries.forEach((entry) => {
+      const el = entry.target as HTMLElement;
+      const exposureId = el.dataset.exposure;
+
+      if (entry.isIntersecting) {
+        // 元素进入视口 → 记录开始时间
+        this.exposedElements.set(el, Date.now());
+      } else if (this.exposedElements.has(el)) {
+        // 元素离开视口 → 计算曝光时长
+        const startTime = this.exposedElements.get(el)!;
+        const duration = Date.now() - startTime;
+
+        if (duration >= this.config.threshold) {
+          // 曝光时长 ≥ 500ms → 触发曝光事件
+          this.callback({
+            elementId: exposureId,
+            elementType: el.tagName.toLowerCase(),
+            elementText: el.textContent?.slice(0, 100) || '',
+            exposureDuration: duration,      // 实际曝光时长
+            exposureRatio: entry.intersectionRatio,  // 可见比例
+          });
+        }
+
+        this.exposedElements.delete(el);
+      }
+    });
+  }
+}
+```
+
+#### 2.5.3 曝光事件触发流程图
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        曝光事件触发流程                              │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   元素进入视口                  元素离开视口                         │
+│        │                            │                               │
+│        ▼                            ▼                               │
+│   ┌─────────┐                 ┌─────────────────────┐            │
+│   │开始曝光 │                 │ 计算曝光时长         │            │
+│   │记录时间 │                 │ duration = now - t  │            │
+│   └─────────┘                 └──────────┬──────────┘            │
+│                                          │                        │
+│                                          ▼                        │
+│                              ┌───────────────────────┐            │
+│                              │ duration ≥ 500ms?     │            │
+│                              └───────────┬───────────┘            │
+│                                     │                              │
+│                           ┌─────────┴─────────┐                  │
+│                           │ YES                 │ NO               │
+│                           ▼                    ▼                   │
+│                    ┌──────────────┐    ┌──────────────┐         │
+│                    │ 触发曝光事件  │    │ 不上报（误触） │         │
+│                    │ track() 加入队列│   │ 丢弃该曝光    │         │
+│                    └──────────────┘    └──────────────┘         │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+#### 2.5.4 批量合并上报机制
+
+当多个曝光事件（不同元素的 C 位和 D 位）在同一批次内时，它们会通过**单个 HTTP 请求**合并发送：
+
+**上报触发时机**：
+
+| 触发方式 | 条件 | 说明 |
+|----------|------|------|
+| **立即触发** | 每次 `track()` 都尝试 | 队列达到 `maxSize` 时真正发送 |
+| **定时触发** | 每 `interval` ms 检查 | 默认每 2 秒检查一次 |
+
+**批量阈值配置**：
+
+```typescript
+// 批量发送配置
+const batchConfig = {
+  maxSize: 50,      // 积累 50 条事件后批量发送
+  interval: 2000,  // 每 2000ms 检查一次
+};
+```
+
+**批量发送示例**：
+
+
+假设首页有三个曝光事件（C 位 feeds 和 D 位 item_0、item_1）同时触发，它们会被合并在一个请求中：
+
+```http
+POST /api/v1/events/batch
+Content-Type: application/json
+
+{
+  "events": [
+    {
+      "eventId": "evt_1747234567890_abc123",
+      "eventType": "exposure",
+      "timestamp": 1747234567890,
+      "data": {
+        "elementId": "c_feeds",           // C 位：整个 feeds 列表
+        "elementType": "div",
+        "exposureDuration": 3200,
+        "exposureRatio": 0.65
+      },
+      "page": { "url": "https://example.com/home" },
+      ...
+    },
+    {
+      "eventId": "evt_1747234567891_def456",
+      "eventType": "exposure",
+      "timestamp": 1747234567891,
+      "data": {
+        "elementId": "d_feedsitem_0",      // D 位：第 0 个元素
+        "elementType": "div",
+        "exposureDuration": 1800,
+        "exposureRatio": 0.80
+      },
+      "page": { "url": "https://example.com/home" },
+      ...
+    },
+    {
+      "eventId": "evt_1747234567892_ghi789",
+      "eventType": "exposure",
+      "timestamp": 1747234567892,
+      "data": {
+        "elementId": "d_feedsitem_1",      // D 位：第 1 个元素
+        "elementType": "div",
+        "exposureDuration": 1500,
+        "exposureRatio": 0.72
+      },
+      "page": { "url": "https://example.com/home" },
+      ...
+    }
+  ]
+}
+```
+
+#### 2.5.4 立即上报与批量合并策略
+
+tracker-sdk 采用**分级上报策略**：
+
+| 事件类型 | 优先级 | 上报策略 |
+|----------|--------|----------|
+| exposure / click | **高** | **立即上报**，不受批量阈值限制 |
+| page_view / scroll | 中 | 批量上报 |
+| 其他 | 低 | 批量上报 |
+
+**代码实现** ([Tracker.ts#L108-113](file:///Users/xueancao/Projects/QoderProjects/gate-flow/apps/tracker-sdk/src/tracker/Tracker.ts#L108-L113)):
+
+```typescript
+const IMMEDIATE_EVENT_TYPES: EventType[] = ['exposure', 'click'];
+track(eventType: EventType, data?: EventData): void {
+  const event = this.buildEvent(eventType, data);
+  this.queue.enqueue(event);
+
+  if (IMMEDIATE_EVENT_TYPES.includes(eventType)) {
+    this.queue.flushImmediate(event, this.config.endpoint);
+  } else {
+    this.queue.flush(this.config.endpoint);
+  }
+}
+```
+
+#### 2.5.5 批量合并发送（非高优先级事件）
+
+当多个非高优先级事件（如 page_view、scroll）在同一批次内时，它们会通过**单个 HTTP 请求**合并发送：
+
+
+| 触发方式 | 条件 | 说明 |
+|----------|------|------|
+| 批量阈值触发 | 队列达到 `maxSize` (50) 时发送 | |
+| 定时触发 | 每 `interval` (2s) 检查一次 | |
+
+**批量阈值配置**：
+
+```typescript
+const batchConfig = {
+  maxSize: 50,      // 积累 50 条事件后批量发送
+  interval: 2000,  // 每 2000ms 检查一次
+};
+```
+
+
+#### 2.5.6 SPM 标识命名规范
+
+曝光元素使用统一的 `data-exposure` 属性标识，遵循以下命名规范：
+
+| 前缀 | 含义 | 示例 | 说明 |
+|------|------|------|------|
+| `c_` | **C 位**（Container） | `c_feeds` | 容器/模块级别曝光 |
+| `d_` | **D 位**（Detail） | `d_feedsitem_0` | 模块内元素曝光，按索引区分 |
+
+**HTML 使用示例**：
+
+```html
+<!-- 首页结构 -->
+<div data-exposure="c_feeds">
+  <!-- C 位：整个 feeds 列表 -->
+  
+  <div data-exposure="d_feedsitem_0">
+    <!-- D 位：第 0 个元素 -->
+    <div class="title">标题1</div>
+    <div class="image">图片1</div>
+  </div>
+  
+  <div data-exposure="d_feedsitem_1">
+    <!-- D 位：第 1 个元素 -->
+    <div class="title">标题2</div>
+    <div class="image">图片2</div>
+  </div>
+  
+  <div data-exposure="d_feedsitem_2">
+    <!-- D 位：第 2 个元素 -->
+    <div class="title">标题3</div>
+    <div class="image">图片3</div>
+  </div>
+  
+</div>
+```
+
+#### 2.5.7 完整配置示例
+
+```javascript
+const tracker = new Tracker({
+  appId: 'gateflow-web',
+  endpoint: 'https://tracker.gateflow.com/api/v1/collect',
+
+  // 曝光配置
+  autoTrack: {
+    exposure: {
+      enabled: true,
+      selector: ['[data-exposure]'],
+      threshold: 500,           // 曝光时长 ≥ 500ms
+      thresholdRatio: 0.5,     // 可见面积 ≥ 50%
+    }
+  },
+
+  // 批量发送配置
+  batch: {
+    maxSize: 50,               // 积累 50 条后批量发送
+    interval: 2000,           // 每 2 秒检查一次
+  },
+
+  // 离线队列配置
+  offline: {
+    enabled: true,
+    maxQueueSize: 100,
+  }
+});
+
+// 初始化
+tracker.init();
+```
+
+### 2.6 离线队列
 
 ```typescript
 // src/queue/EventQueue.ts

@@ -7,6 +7,9 @@ import { SessionCollector } from '../collectors/SessionCollector';
 import { EventQueue } from '../queue/EventQueue';
 import { Sender } from '../sender/Sender';
 
+// High-priority event types that require immediate reporting
+const IMMEDIATE_EVENT_TYPES: EventType[] = ['exposure', 'click'];
+
 export class Tracker {
   private config: Required<TrackerConfig>;
   private queue: EventQueue;
@@ -73,18 +76,41 @@ export class Tracker {
   }
 
   init(): void {
+    console.log('[Tracker] Initializing with config:', {
+      endpoint: this.config.endpoint,
+      appId: this.config.appId,
+      autoTrack: this.config.autoTrack,
+      batch: this.config.batch,
+      offline: this.config.offline,
+    });
+
     // Start all collectors
-    this.collectors.forEach((c) => c.start());
+    this.collectors.forEach((c) => {
+      console.log('[Tracker] Starting collector:', c.constructor.name);
+      c.start();
+    });
 
     // Listen for network status changes
     window.addEventListener('online', () => {
+      console.log('[Tracker] Network online, flushing queue');
       this.queue.flush(this.config.endpoint);
     });
+
+    console.log('[Tracker] Initialization complete');
   }
 
   track(eventType: EventType, data?: EventData): void {
     const event = this.buildEvent(eventType, data);
+    console.log(`[Tracker] Event captured: ${eventType}`, event);
     this.queue.enqueue(event);
+
+
+    // High-priority events (exposure, click) are reported immediately
+    if (IMMEDIATE_EVENT_TYPES.includes(eventType)) {
+      this.queue.flushImmediate(event, this.config.endpoint);
+    } else {
+      this.queue.flush(this.config.endpoint);
+    }
   }
 
   trackPageView(page: { url?: string; title?: string; referrer?: string }): void {

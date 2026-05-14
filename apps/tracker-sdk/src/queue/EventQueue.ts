@@ -60,6 +60,7 @@ export class EventQueue {
     if (this.queue.length === 0) return true;
 
     const events = this.drain();
+    console.log(`[Tracker] Flushing ${events.length} events to ${endpoint}`);
 
     try {
       const response = await fetch(endpoint, {
@@ -72,11 +73,40 @@ export class EventQueue {
         throw new Error(`HTTP ${response.status}`);
       }
 
+      console.log(`[Tracker] Successfully sent ${events.length} events`);
       return true;
     } catch (error) {
       console.error('[Tracker] Failed to flush events:', error);
       // Re-enqueue on failure
       this.enqueueBatch(events);
+      return false;
+    }
+  }
+
+  /**
+   * Immediately flush a single high-priority event (exposure/click) without waiting for batch threshold.
+   * This ensures critical business metrics are reported in real-time.
+   */
+  async flushImmediate(event: EventDTO, endpoint: string): Promise<boolean> {
+    console.log(`[Tracker] Immediately flushing ${event.eventType} event: ${event.eventId}`);
+
+
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ events: [event] }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      console.log(`[Tracker] Successfully sent immediate ${event.eventType} event`);
+      return true;
+    } catch (error) {
+      console.error('[Tracker] Failed to flush immediate event:', error);
+      // Event already in queue, will be retried by periodic flush
       return false;
     }
   }
