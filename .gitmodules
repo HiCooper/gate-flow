@@ -7,3 +7,6 @@
 [submodule "apps/marketing"]
 	path = apps/marketing
 	url = https://github.com/HiCooper/superab-marketing
+[submodule "backend/tracker-service"]
+	path = backend/tracker-service
+	url = git@github.com:HiCooper/tracker-service.git
