@@ -29,8 +29,9 @@ export class ExposureCollector {
       }
     );
 
-    // Observe elements with data-exposure attribute
+    // Observe elements
     const elements = document.querySelectorAll(this.config.selector.join(','));
+    console.log(`[Exposure] Observing ${elements.length} elements with selector: ${this.config.selector.join(', ')}`);
     elements.forEach((el) => this.observer?.observe(el));
   }
 
@@ -46,27 +47,20 @@ export class ExposureCollector {
       const el = entry.target as HTMLElement;
       const trackId = el.dataset.trackId;
 
-      if (entry.isIntersecting) {
-        // Element became visible - record start time
-        el.dataset.exposureStart = Date.now().toString();
-        this.exposedElements.set(el, Date.now());
-      } else if (el.dataset.exposureStart) {
-        // Element became hidden - calculate duration and send event
-        const startTime = parseInt(el.dataset.exposureStart, 10);
-        const duration = Date.now() - startTime;
-
-        if (duration >= this.config.threshold) {
+      // Element is visible and meets threshold - immediately send exposure event
+      if (entry.isIntersecting && entry.intersectionRatio >= this.config.thresholdRatio) {
+        // 只对首次曝光上报（避免重复曝光同一元素）
+        if (!this.exposedElements.has(el)) {
+          console.log(`[Exposure] Captured: ${trackId} (ratio: ${Math.round(entry.intersectionRatio * 100)}%)`);
           this.callback({
             elementId: trackId,
             elementType: el.tagName.toLowerCase(),
             elementText: el.textContent?.slice(0, 100) || '',
-            exposureDuration: duration,
+            exposureDuration: 0,
             exposureRatio: entry.intersectionRatio,
           });
+          this.exposedElements.set(el, Date.now());
         }
-
-        delete el.dataset.exposureStart;
-        this.exposedElements.delete(el);
       }
     });
   }
