@@ -54,7 +54,9 @@ public class SessionRepository {
         try (Connection conn = getDataSource().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setTimestamp(1, Timestamp.from(since));
+            // Convert Instant to LocalDateTime for ClickHouse compatibility
+            java.time.LocalDateTime localDateTime = java.time.LocalDateTime.ofInstant(since, java.time.ZoneOffset.UTC);
+            stmt.setObject(1, localDateTime);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     sessions.add(mapResultSetToSession(rs));
@@ -99,8 +101,8 @@ public class SessionRepository {
         stmt.setString(idx++, session.getAnonymousId() != null ? session.getAnonymousId() : "");
         stmt.setString(idx++, session.getPlatform() != null ? session.getPlatform() : "");
 
-        stmt.setTimestamp(idx++, session.getStartTime() != null ? Timestamp.from(session.getStartTime()) : null);
-        stmt.setTimestamp(idx++, session.getEndTime() != null ? Timestamp.from(session.getEndTime()) : null);
+        stmt.setObject(idx++, session.getStartTime() != null ? java.time.LocalDateTime.ofInstant(session.getStartTime(), java.time.ZoneOffset.UTC) : null);
+        stmt.setObject(idx++, session.getEndTime() != null ? java.time.LocalDateTime.ofInstant(session.getEndTime(), java.time.ZoneOffset.UTC) : null);
         stmt.setLong(idx++, session.getDuration() != null ? session.getDuration() : 0);
 
         stmt.setInt(idx++, session.getPageViews() != null ? session.getPageViews() : 0);
@@ -121,7 +123,7 @@ public class SessionRepository {
         stmt.setString(idx++, session.getDeviceType() != null ? session.getDeviceType() : "");
         stmt.setString(idx++, session.getOs() != null ? session.getOs() : "");
 
-        stmt.setTimestamp(idx++, session.getLastActiveAt() != null ? Timestamp.from(session.getLastActiveAt()) : Timestamp.from(Instant.now()));
+        stmt.setObject(idx++, session.getLastActiveAt() != null ? java.time.LocalDateTime.ofInstant(session.getLastActiveAt(), java.time.ZoneOffset.UTC) : java.time.LocalDateTime.now(java.time.ZoneOffset.UTC));
     }
 
     private Session mapResultSetToSession(ResultSet rs) throws SQLException {
@@ -130,8 +132,10 @@ public class SessionRepository {
                 .userId(rs.getString("user_id"))
                 .anonymousId(rs.getString("anonymous_id"))
                 .platform(rs.getString("platform"))
-                .startTime(rs.getTimestamp("start_time") != null ? rs.getTimestamp("start_time").toInstant() : null)
-                .endTime(rs.getTimestamp("end_time") != null ? rs.getTimestamp("end_time").toInstant() : null)
+                .startTime(rs.getObject("start_time") != null ? 
+                    ((java.time.LocalDateTime) rs.getObject("start_time")).atZone(java.time.ZoneOffset.UTC).toInstant() : null)
+                .endTime(rs.getObject("end_time") != null ? 
+                    ((java.time.LocalDateTime) rs.getObject("end_time")).atZone(java.time.ZoneOffset.UTC).toInstant() : null)
                 .duration(rs.getObject("duration") != null ? rs.getLong("duration") : null)
                 .pageViews(rs.getInt("page_views"))
                 .clicks(rs.getInt("clicks"))
@@ -146,7 +150,8 @@ public class SessionRepository {
                 .utmCampaign(rs.getString("utm_campaign"))
                 .deviceType(rs.getString("device_type"))
                 .os(rs.getString("os"))
-                .lastActiveAt(rs.getTimestamp("last_active_at") != null ? rs.getTimestamp("last_active_at").toInstant() : null)
+                .lastActiveAt(rs.getObject("last_active_at") != null ? 
+                    ((java.time.LocalDateTime) rs.getObject("last_active_at")).atZone(java.time.ZoneOffset.UTC).toInstant() : null)
                 .build();
     }
 }
