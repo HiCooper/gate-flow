@@ -31,4 +31,6 @@ public class CreateSpmRequest {
 
     @Size(max = 512, message = "描述长度不能超过512")
     private String description;
+
+    private Integer status;
 }

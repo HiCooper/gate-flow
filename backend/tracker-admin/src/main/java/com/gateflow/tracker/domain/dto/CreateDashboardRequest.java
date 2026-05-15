@@ -11,8 +11,7 @@ public class CreateDashboardRequest {
     @Size(max = 128, message = "看板名称长度不能超过128")
     private String name;
 
-    @NotBlank(message = "配置不能为空")
-    private String config;
+    private String config = "{}";
 
     private Integer status = 1;
 

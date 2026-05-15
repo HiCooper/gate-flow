@@ -4,6 +4,10 @@ server:
     context-path: /
 
 spring:
+  autoconfigure:
+    exclude:
+      - org.redisson.spring.starter.RedissonAutoConfigurationV2
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
   application:
     name: tracker-admin
   datasource:
@@ -22,7 +26,7 @@ spring:
       test-on-return: false
       validation-query: SELECT 1
   flyway:
-    enabled: true
+    enabled: false
     locations: classpath:db/migration
     baseline-on-migrate: true
     baseline-version: 0
@@ -53,11 +57,11 @@ mybatis-plus:
       logic-delete-value: 1
       logic-not-delete-value: 0
 
-# Redisson distributed lock
-redisson:
-  address: redis://${REDIS_HOST:localhost}:${REDIS_PORT:6379}
-  password: ${REDIS_PASSWORD:}
-  database: 0
+# Redis disabled for local dev
+# redisson:
+#   address: redis://${REDIS_HOST:localhost}:${REDIS_PORT:6379}
+#   password: ${REDIS_PASSWORD:}
+#   database: 0
 
 # Actuator
 management:

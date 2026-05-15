@@ -1,5 +1,7 @@
 package com.gateflow.tracker.domain.dto;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -16,6 +18,7 @@ public class UpdateEventRequest {
     @Pattern(regexp = "^(page_view|click|exposure|custom)$", message = "分类只能是 page_view/click/exposure/custom")
     private String category;
 
-    @Pattern(regexp = "^(0|1)$", message = "状态只能是 0禁用 1启用")
+    @Min(value = 0, message = "状态只能是 0禁用 1启用")
+    @Max(value = 1, message = "状态只能是 0禁用 1启用")
     private Integer status;
 }

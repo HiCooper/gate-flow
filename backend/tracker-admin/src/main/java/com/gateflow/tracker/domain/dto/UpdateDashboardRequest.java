@@ -1,5 +1,7 @@
 package com.gateflow.tracker.domain.dto;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -11,6 +13,7 @@ public class UpdateDashboardRequest {
 
     private String config;
 
-    @Size(max = 1, message = "状态格式不正确")
+    @Min(value = 0, message = "状态格式不正确")
+    @Max(value = 1, message = "状态格式不正确")
     private Integer status;
 }
