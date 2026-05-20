@@ -52,16 +52,31 @@ export class ExposureCollector {
         // 只对首次曝光上报（避免重复曝光同一元素）
         if (!this.exposedElements.has(el)) {
           console.log(`[Exposure] Captured: ${trackId} (ratio: ${Math.round(entry.intersectionRatio * 100)}%)`);
+          // Extract SPM data
+          const spmData = this.extractSpmData(el);
           this.callback({
             elementId: trackId,
             elementType: el.tagName.toLowerCase(),
             elementText: el.textContent?.slice(0, 100) || '',
             exposureDuration: 0,
             exposureRatio: entry.intersectionRatio,
+            ...spmData,
           });
           this.exposedElements.set(el, Date.now());
         }
       }
     });
+  }
+
+  private extractSpmData(element: HTMLElement): { spmCode?: string; spmLevel?: number } {
+    const spmAttr = element.dataset.trackSpm;
+    if (spmAttr) {
+      const parts = spmAttr.split('@');
+      return {
+        spmCode: parts[0] || undefined,
+        spmLevel: parts[1] ? parseInt(parts[1]) : undefined,
+      };
+    }
+    return {};
   }
 }

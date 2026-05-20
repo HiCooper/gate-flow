@@ -46,12 +46,16 @@ export class ClickCollector {
     if (now - this.lastClickTime < this.THROTTLE_MS) return;
     this.lastClickTime = now;
 
+    // Extract SPM info from data-track-spm attribute
+    const spmData = this.extractSpmData(target);
+
     // Build click data
     const rect = target.getBoundingClientRect();
     const data: EventData = {
       elementId: target.dataset.track || target.id,
       elementType: target.tagName.toLowerCase(),
       elementText: this.config.trackText ? (target.textContent?.slice(0, 100) || '') : undefined,
+      ...spmData,
     };
 
     if (this.config.trackPosition) {
@@ -60,6 +64,18 @@ export class ClickCollector {
     }
 
     this.callback(data);
+  }
+
+  private extractSpmData(element: HTMLElement): { spmCode?: string; spmLevel?: number } {
+    const spmAttr = element.dataset.trackSpm;
+    if (spmAttr) {
+      const parts = spmAttr.split('@');
+      return {
+        spmCode: parts[0] || undefined,
+        spmLevel: parts[1] ? parseInt(parts[1]) : undefined,
+      };
+    }
+    return {};
   }
 
   private shouldTrack(element: HTMLElement): boolean {

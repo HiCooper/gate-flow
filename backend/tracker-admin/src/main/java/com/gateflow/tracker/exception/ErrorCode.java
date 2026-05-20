@@ -10,6 +10,7 @@ public class ErrorCode {
     public static final Integer EVENT_KEY_DUPLICATED = 2001;
     public static final Integer SPM_CODE_DUPLICATED = 2002;
     public static final Integer EVENT_DISABLED = 2003;
+    public static final Integer SPM_HAS_CHILDREN = 2004;
 
     // 数据不存在 (3000-3999)
     public static final Integer EVENT_NOT_FOUND = 3001;

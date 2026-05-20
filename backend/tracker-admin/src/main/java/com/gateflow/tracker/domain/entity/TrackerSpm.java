@@ -41,6 +41,18 @@ public class TrackerSpm {
     @TableField(value = "updated_at", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 
+    @TableField("level")
+    private Integer level;
+
+    @TableField("parent_id")
+    private Long parentId;
+
+    @TableField("path")
+    private String path;
+
+    @TableField("sort_order")
+    private Integer sortOrder;
+
     @TableLogic
     @TableField("deleted")
     private Integer deleted;

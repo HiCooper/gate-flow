@@ -80,11 +80,27 @@ export class PageCollector {
   }
 
   private reportPageView(): void {
+    // Extract SPM data from body element (app-level SPM)
+    const spmData = this.extractBodySpmData();
     this.callback({
       url: window.location.href,
       title: document.title,
       referrer: document.referrer,
+      ...spmData,
     });
+  }
+
+  private extractBodySpmData(): { spmCode?: string; spmLevel?: number } {
+    const body = document.body;
+    const spmAttr = body?.dataset?.trackSpm;
+    if (spmAttr) {
+      const parts = spmAttr.split('@');
+      return {
+        spmCode: parts[0] || undefined,
+        spmLevel: parts[1] ? parseInt(parts[1]) : undefined,
+      };
+    }
+    return {};
   }
 
   private buildBeaconUrl(): string {

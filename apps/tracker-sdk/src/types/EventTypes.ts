@@ -51,6 +51,8 @@ export interface EventData {
   clickY?: number;
   exposureDuration?: number;
   exposureRatio?: number;
+  spmCode?: string;  // SPM点位编码
+  spmLevel?: number; // SPM层级 (0-3)
   [key: string]: unknown;
 }
 
