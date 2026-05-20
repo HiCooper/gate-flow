@@ -14,10 +14,10 @@
 
 | 主题 | 说明 |
 |------|------|
-| [架构总览](/dev/architecture/) | 整体架构、模块设计、分桶引擎、统计引擎 |
+| [AB实验系统](/dev/ab-system/) | 分流引擎、统计引擎、数据模型、SDK 集成、API 参考 |
+| [埋点分析系统](/dev/analytics-system/) | 事件管道、数据模型、SDK 设计、会话管理、DLQ 重放 |
+| [架构总览](/dev/architecture/) | 整体架构、前端架构 |
 | [开发环境](/dev/getting-started/) | 本地开发、Docker 部署、IDE 配置 |
-| [SDK 集成](/dev/sdk/) | Java、iOS、Android、Expo SDK 快速开始 |
-| [API 参考](/dev/api/) | REST API 完整参考文档 |
 | [前端开发](/dev/frontend-dev/) | 管理控制台、营销站点、共享组件库 |
 | [后端开发](/dev/backend-dev/) | 编码规范、添加接口、数据库迁移、测试 |
 | [部署运维](/dev/deployment/) | 生产部署、环境配置、监控告警 |

@@ -61,14 +61,58 @@ export default withMermaid(defineConfig({
       ],
       '/dev/': [
         {
+          text: 'AB实验系统',
+          items: [
+            { text: '概述', link: '/dev/ab-system/' },
+            { text: '系统架构', link: '/dev/ab-system/architecture' },
+            { text: '分流引擎', link: '/dev/ab-system/bucketing-engine' },
+            { text: '统计引擎', link: '/dev/ab-system/stats-engine' },
+            { text: '数据模型', link: '/dev/ab-system/data-model' },
+            { text: '模块设计', link: '/dev/ab-system/module-design' },
+            { text: '实验管理平台', link: '/dev/ab-system/experiment-platform' },
+            { text: 'API 参考', link: '/dev/ab-system/api' },
+          ],
+        },
+        {
+          text: 'SDK 集成',
+          items: [
+            { text: 'SDK 概览', link: '/dev/ab-system/sdk-integration/' },
+            { text: 'Java SDK', link: '/dev/ab-system/sdk-integration/java-sdk' },
+            { text: 'iOS SDK', link: '/dev/ab-system/sdk-integration/ios-sdk' },
+            { text: 'Android SDK', link: '/dev/ab-system/sdk-integration/android-sdk' },
+            { text: 'Expo SDK', link: '/dev/ab-system/sdk-integration/expo-sdk' },
+          ],
+        },
+        {
+          text: 'SDK 开发',
+          items: [
+            { text: 'SDK 架构原则', link: '/dev/ab-system/sdk-development/' },
+            { text: '可移植核心', link: '/dev/ab-system/sdk-development/portable-core' },
+            { text: '平台层', link: '/dev/ab-system/sdk-development/platform-layers' },
+          ],
+        },
+        {
+          text: '埋点分析系统',
+          items: [
+            { text: '概述', link: '/dev/analytics-system/' },
+            { text: '系统架构', link: '/dev/analytics-system/architecture' },
+            { text: '事件管道', link: '/dev/analytics-system/event-pipeline' },
+            { text: '数据模型', link: '/dev/analytics-system/data-model' },
+            { text: 'SDK 设计', link: '/dev/analytics-system/sdk-design' },
+            { text: '服务端设计', link: '/dev/analytics-system/server-design' },
+            { text: 'Kafka 设计', link: '/dev/analytics-system/kafka-design' },
+            { text: '会话管理', link: '/dev/analytics-system/session-design' },
+            { text: 'Redis 集群', link: '/dev/analytics-system/redis-cluster' },
+            { text: 'DLQ 重放', link: '/dev/analytics-system/dlq-replay' },
+            { text: '埋点路径规范', link: '/dev/analytics-system/spm-spec' },
+            { text: '产品指南', link: '/dev/analytics-system/product-guide' },
+            { text: '部署运维', link: '/dev/analytics-system/deployment' },
+          ],
+        },
+        {
           text: '架构总览',
           items: [
             { text: '整体架构', link: '/dev/architecture/' },
-            { text: '模块设计', link: '/dev/architecture/module-design' },
-            { text: '分桶引擎', link: '/dev/architecture/bucketing-engine' },
-            { text: '统计引擎', link: '/dev/architecture/stats-engine' },
-            { text: '事件管道', link: '/dev/architecture/event-pipeline' },
-            { text: '数据模型', link: '/dev/architecture/data-model' },
             { text: '前端架构', link: '/dev/architecture/frontend-arch' },
           ],
         },
@@ -78,22 +122,6 @@ export default withMermaid(defineConfig({
             { text: '快速开始', link: '/dev/getting-started/' },
             { text: '本地开发', link: '/dev/getting-started/local-setup' },
             { text: 'Docker 部署', link: '/dev/getting-started/docker-setup' },
-          ],
-        },
-        {
-          text: 'SDK 集成',
-          items: [
-            { text: 'SDK 概览', link: '/dev/sdk/' },
-            { text: 'Java SDK', link: '/dev/sdk/java-sdk' },
-            { text: 'iOS SDK', link: '/dev/sdk/ios-sdk' },
-            { text: 'Android SDK', link: '/dev/sdk/android-sdk' },
-            { text: 'Expo SDK', link: '/dev/sdk/expo-sdk' },
-          ],
-        },
-        {
-          text: 'API 参考',
-          items: [
-            { text: 'REST API', link: '/dev/api/' },
           ],
         },
         {
@@ -111,14 +139,6 @@ export default withMermaid(defineConfig({
             { text: '添加新接口', link: '/dev/backend-dev/adding-endpoint' },
             { text: '数据库迁移', link: '/dev/backend-dev/db-migrations' },
             { text: '测试指南', link: '/dev/backend-dev/testing-guide' },
-          ],
-        },
-        {
-          text: 'SDK 开发',
-          items: [
-            { text: 'SDK 架构原则', link: '/dev/sdk-dev/' },
-            { text: '可移植核心', link: '/dev/sdk-dev/portable-core' },
-            { text: '平台层', link: '/dev/sdk-dev/platform-layers' },
           ],
         },
         {

@@ -1,6 +1,6 @@
-# 架构总览
+# AB实验系统架构
 
-GateFlow 采用分层微服务架构,各模块职责清晰,支持水平扩展。
+本文档描述 GateFlow AB实验系统的整体架构、模块依赖关系和技术选型。
 
 ## 整体系统架构
 
@@ -16,13 +16,10 @@ graph TB
     subgraph Frontend["前端应用层"]
         F1[Admin Console<br/>React + TS]
         F2[Marketing Site<br/>React + TS]
-        F3[Victor Mng Front<br/>React + TS]
-        F4[Docs Site<br/>VitePress]
     end
 
     subgraph API["API 网关层"]
         G1[REST API<br/>Spring Boot]
-        G2[Swagger UI]
     end
 
     subgraph Backend["后端服务层"]
@@ -58,8 +55,7 @@ graph TB
     Service --> Engine
     Service --> Pipeline
     Pipeline --> D3
-    P2 --> D3
-    P3 --> D4
+    P2 --> D4
     S1 --> D1
     S2 --> D2
     S3 --> D4
@@ -99,49 +95,23 @@ graph TD
     style Stats fill:#fff2e1
 ```
 
-> 绿色模块 `victor-bucketing` 是纯 Java 实现,无 Spring 依赖,可直接嵌入客户端 SDK。
+> 绿色模块 `victor-bucketing` 是纯 Java 实现，无 Spring 依赖，可直接嵌入客户端 SDK。
 
-## 实验生命周期状态机
+## 实验生命周期
 
 ```mermaid
 stateDiagram-v2
     [*] --> Draft: 创建实验
-    Draft --> PendingReview: 提交审批
-    PendingReview --> Draft: 驳回
-    PendingReview --> Running: 审批通过
-    Running --> Stopped: 手动停止
+    Draft --> Review: 提交审批
+    Review --> Draft: 驳回
+    Review --> Ramp: 审批通过
+    Ramp --> Running: 放量完成
+    Running --> Paused: 手动暂停
+    Paused --> Running: 恢复
     Running --> Analyzing: 实验结束
-    Stopped --> Analyzing: 分析数据
     Analyzing --> Decided: 做出决策
-    Decided --> RolledOut: 全量获胜方案
-    Decided --> RolledBack: 回滚
     Decided --> Archived: 存档
-    RolledOut --> [*]
-    RolledBack --> [*]
     Archived --> [*]
-```
-
-## 事件流管道架构
-
-```mermaid
-sequenceDiagram
-    participant SDK as Client SDK
-    participant API as EventController
-    participant Kafka as Kafka
-    participant Consumer as Kafka Consumer
-    participant CH as ClickHouse Writer
-    participant DB as ClickHouse
-
-    SDK->>API: POST /api/v1/events
-    API->>Kafka: Publish Event
-    API-->>SDK: 202 Accepted
-
-    Kafka->>Consumer: Consume Event
-    Consumer->>CH: Batch Write
-    CH->>DB: Insert Records
-    CH-->>Consumer: Ack
-
-    Note over SDK,DB: 近实时采集,秒级聚合
 ```
 
 ## 分桶算法流程
@@ -165,19 +135,7 @@ flowchart TD
     J --> K
 ```
 
-## 技术栈总览
-
-### 前端
-
-| 技术 | 用途 |
-|------|------|
-| React 18 + TypeScript | UI 框架 |
-| Vite 5.4 | 构建工具 |
-| Tailwind CSS v4 | 样式系统 |
-| React Router v6/v7 | 路由 |
-| Zustand | 状态管理 |
-| Recharts | 图表库 |
-| @dnd-kit | 拖拽组件 |
+## 技术栈
 
 ### 后端
 
@@ -185,19 +143,28 @@ flowchart TD
 |------|------|
 | Java 17 + Spring Boot 3.4 | 后端框架 |
 | MyBatis-Plus 3.5 | ORM |
-| MySQL 8.0 | 主数据库 |
+| MySQL 8.0 | 配置数据库 |
 | Redis 7 | 缓存 |
 | Apache Kafka | 事件流 |
 | ClickHouse | 分析数据库 |
 | Flyway | 数据库迁移 |
 | SpringDoc OpenAPI | API 文档 |
 
-## 详细内容
+### 前端
 
-GateFlow 包含两个核心子系统，各自有独立的文档章节：
+| 技术 | 用途 |
+|------|------|
+| React 18 + TypeScript | UI 框架 |
+| Vite | 构建工具 |
+| Tailwind CSS v4 | 样式系统 |
+| Zustand | 状态管理 |
+| Recharts | 图表库 |
+
+## 详细文档
 
 | 文档 | 说明 |
 |------|------|
-| [AB实验系统](/dev/ab-system/) | 分流引擎、统计引擎、数据模型、模块设计、SDK 集成等 |
-| [埋点分析系统](/dev/analytics-system/) | 事件管道、数据模型、SDK 设计、会话管理、DLQ 重放等 |
-| [前端架构](/dev/architecture/frontend-arch) | 前端应用技术栈和架构 |
+| [分流引擎](./bucketing-engine) | MurmurHash3 分桶算法详解 |
+| [统计引擎](./stats-engine) | Z-Test、mSPRT、CUPED 算法 |
+| [数据模型](./data-model) | 数据库表结构设计 |
+| [模块设计](./module-design) | Maven 多模块职责与依赖 |
