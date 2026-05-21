@@ -5,14 +5,16 @@ type PageViewCallback = (data: EventData) => void;
 export class PageCollector {
   private config: Required<PageViewConfig>;
   private callback: PageViewCallback;
+  private endpoint: string;
   private lastUrl: string = '';
 
-  constructor(config: PageViewConfig, callback: PageViewCallback) {
+  constructor(config: PageViewConfig, callback: PageViewCallback, endpoint: string) {
     this.config = {
       SPA: config.SPA ?? false,
       referrer: config.referrer ?? true,
     };
     this.callback = callback;
+    this.endpoint = endpoint;
   }
 
   start(): void {
@@ -60,9 +62,24 @@ export class PageCollector {
   };
 
   private handleUnload = (): void => {
-    // Report on unload
-    navigator.sendBeacon?.(this.buildBeaconUrl());
+    const data = this.buildPageViewData();
+    const blob = new Blob([JSON.stringify({ events: [data] })], { type: 'application/json' });
+    navigator.sendBeacon?.(this.endpoint, blob);
   };
+
+  private buildPageViewData(): EventData {
+    const spmData = this.extractBodySpmData();
+    return {
+      url: window.location.href,
+      title: document.title,
+      referrer: document.referrer,
+      ...spmData,
+    };
+  }
+
+  private reportPageView(): void {
+    this.callback(this.buildPageViewData());
+  }
 
   private interceptHistory(): void {
     const originalPushState = history.pushState;
@@ -79,17 +96,6 @@ export class PageCollector {
     };
   }
 
-  private reportPageView(): void {
-    // Extract SPM data from body element (app-level SPM)
-    const spmData = this.extractBodySpmData();
-    this.callback({
-      url: window.location.href,
-      title: document.title,
-      referrer: document.referrer,
-      ...spmData,
-    });
-  }
-
   private extractBodySpmData(): { spmCode?: string; spmLevel?: number } {
     const body = document.body;
     const spmAttr = body?.dataset?.trackSpm;
@@ -102,9 +108,3 @@ export class PageCollector {
     }
     return {};
   }
-
-  private buildBeaconUrl(): string {
-    // TODO: Implement beacon for reliable unload reporting
-    return '';
-  }
-}

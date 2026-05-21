@@ -31,7 +31,15 @@ export class EventQueue {
 
   enqueueBatch(events: EventDTO[]): void {
     for (const event of events) {
-      const entry: QueueEntry = { ...event, _retryCount: 0 };
+      const existingRetry = (event as QueueEntry)._retryCount ?? 0;
+      const entry: QueueEntry = { ...event, _retryCount: existingRetry + 1 };
+
+      // Drop events that exceed max retries
+      if (entry._retryCount! > this.maxRetries) {
+        console.warn(`[Tracker] Event ${event.eventId} exceeded max retries (${this.maxRetries}), dropping`);
+        continue;
+      }
+
       this.queue.push(entry);
     }
 

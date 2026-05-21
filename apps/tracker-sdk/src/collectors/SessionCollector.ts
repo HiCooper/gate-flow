@@ -10,8 +10,8 @@ export class SessionCollector {
   private startTime: number;
   private lastActiveTime: number;
   private eventCount: number = 0;
+  private heartbeatTimer: number | null = null;
 
-  // Session timeout: 30 minutes
   private readonly TIMEOUT_MS = 30 * 60 * 1000;
 
   constructor() {
@@ -21,11 +21,9 @@ export class SessionCollector {
   }
 
   start(): void {
-    // Listen for visibility changes to track activity
     document.addEventListener('visibilitychange', this.handleVisibilityChange);
 
-    // Heartbeat to refresh lastActiveTime
-    setInterval(() => {
+    this.heartbeatTimer = window.setInterval(() => {
       if (document.visibilityState === 'visible') {
         this.recordActivity();
       }
@@ -34,12 +32,14 @@ export class SessionCollector {
 
   stop(): void {
     document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+    if (this.heartbeatTimer !== null) {
+      clearInterval(this.heartbeatTimer);
+      this.heartbeatTimer = null;
+    }
   }
 
   getSessionInfo(): SessionInfo {
-    // Check for timeout
     if (Date.now() - this.lastActiveTime > this.TIMEOUT_MS) {
-      // Create new session
       this.sessionId = this.generateSessionId();
       this.startTime = Date.now();
       this.lastActiveTime = this.startTime;

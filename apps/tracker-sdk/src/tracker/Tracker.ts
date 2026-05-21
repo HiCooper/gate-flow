@@ -37,7 +37,7 @@ export class Tracker {
     if (this.config.autoTrack.pageView) {
       const pageConfig = typeof this.config.autoTrack.pageView === 'object'
         ? this.config.autoTrack.pageView : {};
-      const pageCollector = new PageCollector(pageConfig, (data) => this.track('page_view', data));
+      const pageCollector = new PageCollector(pageConfig, (data) => this.track('page_view', data), this.config.endpoint);
       this.collectors.add(pageCollector);
     }
 
@@ -102,14 +102,20 @@ export class Tracker {
   track(eventType: EventType, data?: EventData): void {
     const event = this.buildEvent(eventType, data);
     console.log(`[Tracker] Event captured: ${eventType}`, event);
-    this.queue.enqueue(event);
 
+    // Record session activity on every tracked event
+    const sessionCollector = Array.from(this.collectors)
+      .find((c) => c instanceof SessionCollector) as SessionCollector | undefined;
+    sessionCollector?.recordActivity();
 
-    // High-priority events (exposure, click) are reported immediately
     if (IMMEDIATE_EVENT_TYPES.includes(eventType)) {
-      this.queue.flushImmediate(event, this.config.endpoint);
+      // High-priority events: send immediately, only enqueue on failure
+      this.queue.flushImmediate(event, this.config.endpoint).catch(() => {
+        this.queue.enqueue(event);
+      });
     } else {
-      this.queue.flush(this.config.endpoint);
+      // Normal events: enqueue for batch sending
+      this.queue.enqueue(event);
     }
   }
 
