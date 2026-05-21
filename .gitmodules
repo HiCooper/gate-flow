@@ -13,3 +13,6 @@
 [submodule "backend/tracker-admin"]
 	path = backend/tracker-admin
 	url = git@github.com:HiCooper/tracker-admin.git
+[submodule "backend/victor-stats-scheduler"]
+	path = backend/victor-stats-scheduler
+	url = git@github.com:HiCooper/victor-stats-scheduler.git
