@@ -12,13 +12,8 @@ public class CorsConfig {
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
-        // 允许凭据
-        config.setAllowCredentials(true);
-        // 允许所有来源，可以根据需要限制
         config.addAllowedOriginPattern("*");
-        // 允许所有请求头
         config.addAllowedHeader("*");
-        // 允许所有 HTTP 方法
         config.addAllowedMethod("*");
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
