@@ -160,6 +160,7 @@ export default withMermaid(defineConfig({
             { text: 'Git Submodule', link: '/dev/contributing/git-submodule' },
             { text: 'PR 工作流', link: '/dev/contributing/pr-workflow' },
             { text: '提交规范', link: '/dev/contributing/commit-conventions' },
+            { text: 'AI 协作实践', link: '/dev/contributing/ai-collaboration' },
           ],
         },
       ],

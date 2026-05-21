@@ -40,6 +40,8 @@ docs/knowledge/
 | `05-historical-lessons/2026-05-07_swift-macos-runtime-crash.md` | Swift macOS 崩溃 | 在 macOS 上跑 Swift 单元测试时 |
 | `06-api-reference/expo-gateflow-api.md` | Expo SDK API | React Native 集成 GateFlow 时 |
 | `07-test-rule/SDK_TEST_PROGRESS.md` | SDK 测试进展 | 在另一台机器上继续 SDK 测试时 |
+| `01-project-overview/stats-module-split-architecture.md` | Stats 模块拆分架构 | 理解 victor-stats → engine+scheduler 拆分决策及可执行规则时 |
+| `05-historical-lessons/2026-05-21_silent-failures-in-stats-pipeline.md` | 统计管线静默失败 | 修改 stats 算法/SQL/枚举时，注意 CUPED 回写、ENUM 同步、方差公式等陷阱 |
 
 > **当前状态：** 4/8 目录已有文档，4 个目录为空。新增 `.md` 文件后，请在上表注册。
 
