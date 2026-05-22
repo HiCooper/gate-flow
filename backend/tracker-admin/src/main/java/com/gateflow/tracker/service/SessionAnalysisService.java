@@ -1,13 +1,13 @@
 package com.gateflow.tracker.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.gateflow.tracker.domain.dto.SessionAnalysisVO;
-import com.gateflow.tracker.domain.entity.TrackerSessionAgg;
-import com.gateflow.tracker.repository.TrackerSessionAggMapper;
+import com.gateflow.tracker.repository.ClickHouseSessionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,59 +17,53 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SessionAnalysisService {
 
-    private final TrackerSessionAggMapper sessionAggMapper;
+    private final ClickHouseSessionRepository sessionRepository;
 
-    public List<SessionAnalysisVO> query(String sessionId, String userId, LocalDate startDate, LocalDate endDate) {
-        // Note: sessionId and userId are for future detailed session lookup
-        // Currently we aggregate by date/hour from tracker_session_agg
-        
-        LambdaQueryWrapper<TrackerSessionAgg> wrapper = new LambdaQueryWrapper<>();
-        
-        // 日期范围过滤
-        if (startDate != null) {
-            wrapper.ge(TrackerSessionAgg::getDate, startDate);
-        }
-        if (endDate != null) {
-            wrapper.le(TrackerSessionAgg::getDate, endDate);
-        }
-        
-        // 按日期和小时降序排序
-        wrapper.orderByDesc(TrackerSessionAgg::getDate)
-               .orderByDesc(TrackerSessionAgg::getHour);
-        
-        // 限制返回数量
-        wrapper.last("LIMIT 1000");
-        
-        List<TrackerSessionAgg> results = sessionAggMapper.selectList(wrapper);
-        
-        return results.stream().map(this::toVO).collect(Collectors.toList());
+    public List<SessionAnalysisVO> query(String sessionId, String userId,
+                                          LocalDate startDate, LocalDate endDate) {
+        List<ClickHouseSessionRepository.SessionAggRow> rows = sessionRepository.queryHourlyAgg(
+                startDate != null ? startDate : LocalDate.now().minusDays(7),
+                endDate != null ? endDate : LocalDate.now(),
+                null);
+
+        return rows.stream().map(this::toVO).collect(Collectors.toList());
     }
 
     public List<SessionAnalysisVO> getRecentData(int days) {
         LocalDate endDate = LocalDate.now();
         LocalDate startDate = endDate.minusDays(days);
-        
-        LambdaQueryWrapper<TrackerSessionAgg> wrapper = new LambdaQueryWrapper<>();
-        wrapper.ge(TrackerSessionAgg::getDate, startDate);
-        wrapper.le(TrackerSessionAgg::getDate, endDate);
-        wrapper.orderByDesc(TrackerSessionAgg::getDate);
-        wrapper.last("LIMIT 100");
-        
-        List<TrackerSessionAgg> results = sessionAggMapper.selectList(wrapper);
-        return results.stream().map(this::toVO).collect(Collectors.toList());
+
+        List<ClickHouseSessionRepository.SessionAggRow> rows = sessionRepository.queryDailyAgg(
+                startDate, endDate, null);
+
+        return rows.stream().map(this::toVO).collect(Collectors.toList());
     }
 
-    private SessionAnalysisVO toVO(TrackerSessionAgg agg) {
+    private SessionAnalysisVO toVO(ClickHouseSessionRepository.SessionAggRow row) {
         SessionAnalysisVO vo = new SessionAnalysisVO();
-        vo.setDate(agg.getDate());
-        vo.setHour(agg.getHour());
-        vo.setPlatform(agg.getPlatform());
-        vo.setSessionCount(agg.getSessionCount());
-        vo.setUserCount(agg.getUserCount());
-        vo.setAvgDuration(agg.getAvgDuration());
-        vo.setAvgPageDepth(agg.getAvgPageDepth());
-        vo.setBounceCount(agg.getBounceCount());
-        vo.setBounceRate(agg.getBounceRate());
+        if (row.hour != null) {
+            vo.setDate(row.hour.toLocalDate());
+            vo.setHour(row.hour.getHour());
+        } else if (row.date != null) {
+            vo.setDate(row.date);
+        }
+        vo.setPlatform(row.platform);
+        vo.setSessionCount(row.sessionCount);
+        vo.setUserCount(row.userCount);
+        vo.setAvgDuration(row.avgDuration);
+        vo.setAvgPageDepth(row.avgPageDepth);
+
+        long bounceCount = row.bounceCount;
+        long sessionCount = row.sessionCount;
+        vo.setBounceCount(bounceCount);
+
+        if (sessionCount > 0) {
+            BigDecimal rate = BigDecimal.valueOf(bounceCount)
+                    .divide(BigDecimal.valueOf(sessionCount), 4, RoundingMode.HALF_UP);
+            vo.setBounceRate(rate);
+        } else {
+            vo.setBounceRate(BigDecimal.ZERO);
+        }
         return vo;
     }
 }

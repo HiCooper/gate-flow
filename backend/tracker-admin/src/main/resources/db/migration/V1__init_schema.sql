@@ -1,5 +1,6 @@
--- Tracker Admin 初始数据库结构
--- V1__init_schema.sql
+-- Tracker Admin 数据库结构（仅元数据管理）
+
+SET FOREIGN_KEY_CHECKS = 0;
 
 -- 事件定义表
 CREATE TABLE tracker_event (
@@ -30,22 +31,34 @@ CREATE TABLE tracker_property (
     UNIQUE KEY uk_event_prop (event_id, prop_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='属性定义表';
 
--- SPM 配置表
+-- SPM 配置表 (含层级结构)
 CREATE TABLE tracker_spm (
     id          BIGINT PRIMARY KEY AUTO_INCREMENT,
-    spm_code    VARCHAR(64) NOT NULL UNIQUE COMMENT 'SPM编码',
+    spm_code    VARCHAR(64) NOT NULL COMMENT 'SPM编码',
     spm_name    VARCHAR(128) NOT NULL COMMENT 'SPM名称',
     spma_label  VARCHAR(64) COMMENT 'A层标签',
     spmb_label  VARCHAR(64) COMMENT 'B层标签',
     spmc_label  VARCHAR(64) COMMENT 'C层标签',
     spmd_label  VARCHAR(64) COMMENT 'D层标签',
+    level       TINYINT DEFAULT 0 COMMENT '层级深度: 0=应用(SPMA) 1=页面(SPMB) 2=区块(SPMC) 3=点位(SPMD)',
+    parent_id   BIGINT COMMENT '父级SPM ID，NULL表示根节点(SPMA)',
+    path        VARCHAR(512) COMMENT '完整路径: app_page_block_spot',
+    sort_order  INT DEFAULT 0 COMMENT '同级排序',
     description VARCHAR(512),
     status      TINYINT DEFAULT 1 COMMENT '状态: 0禁用 1启用',
     created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at  DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted     TINYINT DEFAULT 0 COMMENT '逻辑删除',
+    -- 虚拟生成列：仅根节点(level=0)参与唯一索引，MySQL 允许多个 NULL 不冲突
+    spma_code_for_unique VARCHAR(64)
+        GENERATED ALWAYS AS (CASE WHEN level = 0 THEN spm_code ELSE NULL END) VIRTUAL
+        COMMENT '辅助列：仅根节点(level=0)参与唯一索引',
     INDEX idx_spm_code (spm_code),
-    INDEX idx_status (status)
+    INDEX idx_status (status),
+    UNIQUE INDEX uk_spma_code (spma_code_for_unique),
+    INDEX idx_spm_parent (parent_id),
+    INDEX idx_spm_level (level),
+    CONSTRAINT fk_spm_parent FOREIGN KEY (parent_id) REFERENCES tracker_spm(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='SPM配置表';
 
 -- 看板配置表
@@ -61,58 +74,4 @@ CREATE TABLE tracker_dashboard (
     INDEX idx_status (status),
     INDEX idx_created_by (created_by)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='看板配置表';
-
--- 事件聚合表 (按时间窗口聚合)
-CREATE TABLE tracker_event_agg (
-    id              BIGINT PRIMARY KEY AUTO_INCREMENT,
-    date            DATE NOT NULL COMMENT '日期',
-    hour            TINYINT COMMENT '小时 (0-23, -1表示全天)',
-    platform        VARCHAR(32) COMMENT '平台',
-    event_type      VARCHAR(64) NOT NULL COMMENT '事件类型',
-    event_count     BIGINT DEFAULT 0 COMMENT '事件次数',
-    user_count      BIGINT DEFAULT 0 COMMENT '用户数 (去重)',
-    device_count    BIGINT DEFAULT 0 COMMENT '设备数 (去重)',
-    created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY uk_date_hour_platform_event (date, hour, platform, event_type),
-    INDEX idx_date (date),
-    INDEX idx_event_type (event_type)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='事件聚合表';
-
--- Session 聚合表
-CREATE TABLE tracker_session_agg (
-    id                  BIGINT PRIMARY KEY AUTO_INCREMENT,
-    date                DATE NOT NULL COMMENT '日期',
-    hour                TINYINT COMMENT '小时',
-    platform            VARCHAR(32) COMMENT '平台',
-    session_count       BIGINT DEFAULT 0 COMMENT '会话次数',
-    user_count          BIGINT DEFAULT 0 COMMENT '用户数 (去重)',
-    avg_duration        DECIMAL(10,2) DEFAULT 0 COMMENT '平均会话时长(秒)',
-    avg_page_depth      DECIMAL(10,2) DEFAULT 0 COMMENT '平均页面深度',
-    bounce_count        BIGINT DEFAULT 0 COMMENT '跳出次数 (单页Session)',
-    bounce_rate         DECIMAL(5,4) DEFAULT 0 COMMENT '跳出率',
-    created_at          DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at          DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY uk_date_hour_platform (date, hour, platform),
-    INDEX idx_date (date),
-    INDEX idx_platform (platform)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Session聚合表';
-
--- 聚合任务调度记录表
-CREATE TABLE tracker_aggregation_job (
-    id                  BIGINT PRIMARY KEY AUTO_INCREMENT,
-    job_type            VARCHAR(32) NOT NULL COMMENT '任务类型: event/session',
-    job_status          VARCHAR(32) NOT NULL COMMENT '任务状态: running/success/failed',
-    trigger_type        VARCHAR(32) NOT NULL COMMENT '触发类型: scheduled/manual',
-    start_time          DATETIME NOT NULL COMMENT '开始时间',
-    end_time            DATETIME COMMENT '结束时间',
-    time_range_start    DATETIME NOT NULL COMMENT '数据时间范围开始',
-    time_range_end      DATETIME NOT NULL COMMENT '数据时间范围结束',
-    records_processed   BIGINT DEFAULT 0 COMMENT '处理记录数',
-    error_message       VARCHAR(1024) COMMENT '错误信息',
-    created_at          DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at          DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_job_type_status (job_type, job_status),
-    INDEX idx_trigger_type (trigger_type),
-    INDEX idx_start_time (start_time)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='聚合任务调度记录表';
+SET FOREIGN_KEY_CHECKS = 1;
