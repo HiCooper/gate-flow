@@ -20,6 +20,7 @@ export default withMermaid(defineConfig({
       { text: '产品指南', link: '/guide/', activeMatch: '^/guide/' },
       { text: '技术文档', link: '/dev/', activeMatch: '^/dev/' },
       { text: '内部知识', link: '/knowledge/', activeMatch: '^/knowledge/' },
+      { text: '分析报告', link: '/analysis-reports/', activeMatch: '^/analysis-reports/' },
     ],
 
     // 侧边栏 - 产品指南
@@ -161,6 +162,15 @@ export default withMermaid(defineConfig({
             { text: 'PR 工作流', link: '/dev/contributing/pr-workflow' },
             { text: '提交规范', link: '/dev/contributing/commit-conventions' },
             { text: 'AI 协作实践', link: '/dev/contributing/ai-collaboration' },
+          ],
+        },
+      ],
+      '/analysis-reports/': [
+        {
+          text: '分析报告',
+          items: [
+            { text: '报告列表', link: '/analysis-reports/' },
+            { text: '2026-05-26 生产就绪度评估', link: '/analysis-reports/2026-05-26-gateflow-production-readiness-assessment' },
           ],
         },
       ],
