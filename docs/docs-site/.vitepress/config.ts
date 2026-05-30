@@ -111,6 +111,7 @@ export default withMermaid(defineConfig({
             { text: '埋点路径规范', link: '/dev/analytics-system/spm-spec' },
             { text: '产品指南', link: '/dev/analytics-system/product-guide' },
             { text: '部署运维', link: '/dev/analytics-system/deployment' },
+            { text: 'AB 分析 SQL 示例', link: '/dev/analytics-system/ab-analysis-sql' },
           ],
         },
         {

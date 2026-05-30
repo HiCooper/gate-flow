@@ -90,15 +90,12 @@ Run from individual app directories:
 
 | Module | Purpose | Key Constraint |
 |--------|---------|----------------|
-| `victor-common` | Utilities, constants, base exceptions | No Spring dependencies |
+| `victor-common` | Utilities, constants, base exceptions, bucketing engine | No Spring dependencies — portable to SDK |
 | `victor-domain` | Entities, DTOs, event models | Depends only on common |
-| `victor-bucketing` | Core bucketing/div分流 engine | **Pure Java, no Spring** — designed to be portable to SDK |
-| `victor-infrastructure` | MyBatis mappers, DB/Redis/Kafka config | Depends on domain |
-| `victor-service` | Business logic services | Depends on domain, bucketing, infrastructure |
-| `victor-sdk` | Client SDK for downstream services | Depends on domain |
-| `victor-web` | REST controllers, Spring Boot entry point | Depends on domain, service, infrastructure |
-| `victor-pipeline` | Event ingestion (Kafka producer, ClickHouse writer) | — |
-| `victor-stats` | Statistical engine: SRM, CUPED, Z-test, BH correction, mSPRT | Uses Apache Commons Math |
+| `victor-stats-engine` | Statistical engine: SRM, CUPED, Z-test, BH correction, mSPRT | Also used by external victor-stats-scheduler |
+| `victor-service` | Business logic, MyBatis mappers, Kafka pipeline, event ingestion | Depends on domain, stats-engine |
+| `victor-sdk` | Client SDK for downstream services | Depends on common |
+| `victor-web` | REST controllers, Spring Boot entry point | Depends on domain, service, stats-engine |
 
 ### Build & Run Commands
 
@@ -107,7 +104,7 @@ From `backend/victor-ab/`:
 - `mvn clean package -DskipTests` — build without tests
 - `mvn test` — run all tests
 - `mvn test -Dtest=BucketEngineTest` — run a single test class
-- `mvn test -pl victor-bucketing` — run tests for one module
+- `mvn test -pl victor-service` — run tests for one module
 - `mvn spring-boot:run -pl victor-web` — run the application
 
 Docker:
@@ -116,7 +113,7 @@ Docker:
 ### Application Config
 
 `victor-web/src/main/resources/application.yml`:
-- Server port: `8080`
+- Server port: `8081`
 - DB: `victor_experiment` on localhost:3306
 - Redis: localhost:6379
 - Flyway enabled with migrations in `classpath:db/migration`
@@ -125,10 +122,10 @@ Docker:
 
 ### Key Architecture Details
 
-**Bucketing Engine (`victor-bucketing`)**
+**Bucketing Engine (`victor-common/bucketing`)**
 - `BucketEngine.computeBucket(userId, layerId, salt)` uses MurmurHash3 on `userId#layerId#salt` and mods by 10,000 to produce a bucket number (0–9999).
 - `BucketEngine.findVariant(bucket, variantSpecs)` maps the bucket to a variant key based on `[bucketStart, bucketEnd]` ranges.
-- This module intentionally has zero Spring dependencies so it can be embedded directly into the client SDK.
+- Lives in `victor-common` so it can be embedded directly into the client SDK.
 
 **Experiment & Layer Model**
 - Experiments live within layers. Layers provide orthogonal traffic buckets so experiments in different layers do not interfere.
@@ -136,7 +133,7 @@ Docker:
 - `UserAssignment` tracks which variant a user was assigned to.
 
 **Pipeline & Stats**
-- `victor-pipeline` ingests events via REST (`EventController`) or Kafka, writes to ClickHouse.
+- `victor-service` ingests events via REST (`EventController`) or Kafka, writes to ClickHouse.
 - `victor-stats` implements sequential testing (mSPRT), variance reduction (CUPED), and multiple comparison correction (BH).
 
 ## API Endpoints
@@ -147,7 +144,7 @@ REST controllers in `victor-web` under `/api/v1/`:
 - `VariantController` — `/api/v1/variants`
 - `BucketingController` — `/api/v1/bucket` (runtime bucketing requests)
 - `ConfigController` — `/api/v1/config` (SDK config fetch)
-- `EventController` (in pipeline module) — event ingestion
+- `EventController` (in service module) — event ingestion
 
 ## Testing
 
