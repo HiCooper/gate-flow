@@ -2,15 +2,13 @@
 /**
  * SDK 实验分流上报模拟器
  * 模拟 SDK getVariant() 命中后上报分流结果（assignment）到 AB 系统
- * 行为埋点（exposure/click/page_view 等）由 tracker-service 独立采集
  *
  * Usage:
- *   node scripts/simulate-sdk-events.js [expId] [intervalSeconds]
+ *   node scripts/simulate-sdk-events.js <expId> <bucketIds> [intervalSeconds]
  *
  * Examples:
- *   node scripts/simulate-sdk-events.js                    # 自动发现运行中的实验
- *   node scripts/simulate-sdk-events.js 6059434             # 指定实验，默认 2s 间隔
- *   node scripts/simulate-sdk-events.js 6059434 1           # 指定实验，1s 间隔
+ *   node scripts/simulate-sdk-events.js 6055368 86355,46956,35700        # 指定实验和分桶ID，默认 2s
+ *   node scripts/simulate-sdk-events.js 6055368 86355,46956,35700 1      # 1s 间隔
  */
 
 const API_BASE = process.env.API_BASE || 'http://localhost:8081/api/v1';
@@ -70,15 +68,14 @@ function generateSessionId() {
   return `session_${Math.random().toString(36).substring(2, 12)}`;
 }
 
-function generateEvent(expId) {
-  const variant = randomChoice(['control', 'treatment']);
-  const layer = 'default';
+function generateEvent(expId, bucketIds) {
+  const bucketId = randomChoice(bucketIds);
 
   return {
     eventId: generateEventId(),
     userId: generateUserId(),
     timestamp: Date.now(),
-    experimentTags: [{ expId, variant, layer }],
+    experimentTags: [{ expId, bucket: bucketId, layer: 'default' }],
     platform: randomChoice(PLATFORMS),
     deviceId: generateDeviceId(),
     sessionId: generateSessionId(),
@@ -108,7 +105,7 @@ async function sendEvent(event) {
     console.log(
       `[${new Date().toISOString()}] Sent: exposure | ` +
       `exp=${event.experimentTags[0].expId} | ` +
-      `variant=${event.experimentTags[0].variant} | ` +
+      `bucket=${event.experimentTags[0].bucket} | ` +
       `user=${event.userId} | ` +
       `result=accepted:${result.accepted}, rejected:${result.rejected}`
     );
@@ -119,12 +116,13 @@ async function sendEvent(event) {
   }
 }
 
-async function runSimulation(expId, intervalSeconds) {
+async function runSimulation(expId, bucketIds, intervalSeconds) {
   console.log('='.repeat(60));
   console.log('SDK Event Simulator');
   console.log('='.repeat(60));
   console.log(`Target Experiment: ${expId}`);
-  console.log(`Report Interval: ${intervalSeconds}s (random ±1s)`);
+  console.log(`Bucket IDs: ${bucketIds.join(', ')}`);
+  console.log(`Report Interval: ${intervalSeconds}s`);
   console.log(`API Base: ${API_BASE}`);
   console.log('='.repeat(60));
   console.log('Press Ctrl+C to stop');
@@ -132,12 +130,59 @@ async function runSimulation(expId, intervalSeconds) {
 
   let totalSent = 0;
   let totalSuccess = 0;
+  let totalTracker = 0;
+  let tick = 0;
   const intervalMs = Math.max(100, intervalSeconds * 1000);
 
+    const TRACKER_BASE = process.env.TRACKER_BASE || 'http://localhost:8088/api/v1';
+
+  function generateTrackerEvent(expId, userId, bucketId) {
+    const isPageView = Math.random() > 0.2;  // 80% page_view, 20% click
+    const eventType = isPageView ? 'page_view' : 'click';
+    return {
+      eventId: `trk_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
+      eventType,
+      userId,
+      timestamp: Date.now(),
+      platform: 'web',
+      page: { url: '/pricing', title: 'Pricing Page' },
+      data: isPageView
+        ? { scrollDepth: randomInt(30, 90), stayDuration: randomInt(5, 60) * 1000 }
+        : { elementId: 'cta-button', elementType: 'button', elementText: 'Subscribe Now', clickX: randomInt(100,800), clickY: randomInt(200,600) },
+    };
+  }
+
+  async function sendTrackerEvent(event) {
+    try {
+      const res = await fetch(`${TRACKER_BASE}/collect`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ events: [event] }),
+      });
+      if (!res.ok) {
+        const err = await res.text();
+        console.error(`[${new Date().toISOString()}] Tracker HTTP ${res.status}: ${err.slice(0,100)}`);
+        return false;
+      }
+      if (totalTracker % 10 === 0) {
+        console.log(`[${new Date().toISOString()}] Tracker: ${totalTracker} events sent OK`);
+      }
+      return true;
+    } catch (e) {
+      console.error(`[${new Date().toISOString()}] Tracker error: ${e.message}`);
+      return false;
+    }
+  }
+
   const timer = setInterval(() => {
-    const event = generateEvent(expId);
+    const event = generateEvent(expId, bucketIds);
     totalSent++;
     sendEvent(event).then(success => { if (success) totalSuccess++; });
+
+    // Also send a tracker behavior event
+    const trackerEvt = generateTrackerEvent(expId, event.userId, event.experimentTags[0].bucket);
+    totalTracker++;
+    sendTrackerEvent(trackerEvt);
   }, intervalMs);
 
   const shutdown = () => {
@@ -145,7 +190,7 @@ async function runSimulation(expId, intervalSeconds) {
     console.log('');
     console.log('='.repeat(60));
     console.log('Shutting down...');
-    console.log(`Total sent: ${totalSent}, Successful: ${totalSuccess}`);
+    console.log(`Total AB events: ${totalSent} (${totalSuccess} ok), Tracker events: ${totalTracker}`);
     console.log('='.repeat(60));
     process.exit(0);
   };
@@ -154,31 +199,24 @@ async function runSimulation(expId, intervalSeconds) {
   process.on('SIGTERM', shutdown);
 }
 
-// Parse command line arguments & auto-detect running experiments
+// Parse command line arguments
 const args = process.argv.slice(2);
-let expId = args.length > 0 ? args[0] : null;
+const expId = args[0];
+const bucketIds = args[1] ? args[1].split(',') : [];
 let intervalSeconds = 2;
 
-if (args.length > 1) {
-  intervalSeconds = parseFloat(args[1]);
+if (!expId || bucketIds.length === 0) {
+  console.error('Usage: node scripts/simulate-sdk-events.js <expId> <bucketId1,bucketId2,...> [intervalSeconds]');
+  console.error('Example: node scripts/simulate-sdk-events.js 6055368 86355,46956,35700');
+  process.exit(1);
+}
+
+if (args.length > 2) {
+  intervalSeconds = parseFloat(args[2]);
   if (isNaN(intervalSeconds) || intervalSeconds <= 0) {
     console.error('Invalid interval. Must be a positive number of seconds.');
     process.exit(1);
   }
 }
 
-(async () => {
-  if (!expId) {
-    console.log('No experiment specified, fetching running experiments from API...');
-    const running = await fetchRunningExperiments();
-    if (running.length > 0) {
-      expId = running[0].expId;
-      console.log(`Auto-selected experiment: ${expId}`);
-    } else {
-      console.error('No running experiments found. Start an experiment first, or specify one:');
-      console.error('  node scripts/simulate-sdk-events.js <expId>');
-      process.exit(1);
-    }
-  }
-  runSimulation(expId, intervalSeconds);
-})();
+runSimulation(expId, bucketIds, intervalSeconds);

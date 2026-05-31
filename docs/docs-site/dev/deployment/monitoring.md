@@ -8,13 +8,13 @@
 
 ```bash
 # 查看所有端点
-curl http://localhost:8080/actuator
+curl http://localhost:8081/actuator
 
 # 查看健康状态
-curl http://localhost:8080/actuator/health
+curl http://localhost:8081/actuator/health
 
 # 查看指标
-curl http://localhost:8080/actuator/metrics
+curl http://localhost:8081/actuator/metrics
 ```
 
 ### 核心指标

@@ -71,55 +71,43 @@ graph TB
 
 ```mermaid
 graph TD
-    Web[victor-web<br/>Web 入口] --> Service
-    Web --> Infra
-    Web --> Domain
+    Starter[victor-starter<br/>应用入口 + Controllers] --> Service[victor-service<br/>业务逻辑 · 管道 · 统计]
+    Starter --> Domain[victor-domain<br/>领域模型]
 
-    Service[victor-service<br/>业务服务] --> Bucketing
     Service --> Domain
-    Service --> Infra
 
-    Pipeline[victor-pipeline<br/>数据管道] --> Infra
-    Pipeline --> Domain
+    SDK[victor-sdk<br/>客户端 SDK] --> Domain
+    SDK -.->|可嵌入| Common[victor-common<br/>BucketEngine · 枚举 · 工具]
 
-    Stats[victor-stats<br/>统计引擎] --> Domain
+    Domain --> Common
 
-    SDK[victor-sdk<br/>客户端 SDK] --> Bucketing
-    SDK --> Domain
-
-    Bucketing[victor-bucketing<br/>分桶引擎<br/>纯 Java,无 Spring] --> Domain
-
-    Infra[victor-infrastructure<br/>基础设施] --> Domain
-
-    Domain[victor-domain<br/>领域模型] --> Common
-
-    Common[victor-common<br/>公共模块]
-
-    style Bucketing fill:#e1f5e1
-    style Stats fill:#fff2e1
+    style Common fill:#e1f5e1
 ```
 
-> 绿色模块 `victor-bucketing` 是纯 Java 实现,无 Spring 依赖,可直接嵌入客户端 SDK。
+> 绿色模块 `victor-common` 是纯 Java 实现，无 Spring 依赖。`BucketEngine` 可直接嵌入客户端 SDK（Java / Kotlin / Swift / TypeScript）。
 
 ## 实验生命周期状态机
 
 ```mermaid
 stateDiagram-v2
     [*] --> Draft: 创建实验
-    Draft --> PendingReview: 提交审批
-    PendingReview --> Draft: 驳回
-    PendingReview --> Running: 审批通过
-    Running --> Stopped: 手动停止
-    Running --> Analyzing: 实验结束
-    Stopped --> Analyzing: 分析数据
-    Analyzing --> Decided: 做出决策
-    Decided --> RolledOut: 全量获胜方案
-    Decided --> RolledBack: 回滚
-    Decided --> Archived: 存档
-    RolledOut --> [*]
-    RolledBack --> [*]
-    Archived --> [*]
+    Draft --> PendingApproval: 提交审批
+    PendingApproval --> Draft: 驳回
+    PendingApproval --> Running: 审批通过
+    Running --> Stopped: 停止实验
+    Stopped --> Archive: 归档
+    Archive --> [*]
 ```
+
+| 状态 | 说明 | 允许的操作 |
+|------|------|-----------|
+| `draft` | 草稿 | 编辑、提交审批、启动、删除 |
+| `pending_approval` | 待审批 | 审批通过、驳回 |
+| `running` | 运行中 | 停止（可启用 auto_ramp 灰度自动推进） |
+| `stopped` | 已停止 | 归档、查看分析报告 |
+| `archive` | 已归档 | 查看 |
+
+> 灰度放量不再是独立状态，而是 running 状态内的特性（`auto_ramp_enabled` + `ramp_config`）。
 
 ## 事件流管道架构
 

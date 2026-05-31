@@ -20,7 +20,7 @@
 
 ```java
 VictorConfig config = VictorConfig.builder()
-    .baseUrl("http://localhost:8080")
+    .baseUrl("http://localhost:8081")
     .apiKey("your-api-key")
     .build();
 
@@ -71,7 +71,7 @@ SDK 内置 Caffeine 本地缓存，减少网络请求：
 
 ```java
 VictorConfig config = VictorConfig.builder()
-    .baseUrl("http://localhost:8080")
+    .baseUrl("http://localhost:8081")
     .apiKey("api-key")
     .maxCacheSize(5000)      // 缓存 5000 条
     .refreshInterval(30000)   // 30秒刷新一次

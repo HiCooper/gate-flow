@@ -4,12 +4,12 @@
 
 ## 迁移脚本位置
 
-迁移脚本位于 `victor-infrastructure/src/main/resources/db/migration/`
+迁移脚本位于 `victor-service/src/main/resources/db/migration/`
 
 ```
-victor-infrastructure/src/main/resources/db/migration/
-├── V1__init_schema.sql      # 初始化核心表
-└── V2__add_experiment_whitelist.sql  # 新增白名单表
+victor-service/src/main/resources/db/migration/
+├── V1__init_schema.sql              # 初始化 14 张表（含 RBAC、用户、审批等）
+└── V2__simplify_experiment_status.sql   # 实验状态从 12 个简化为 5 个
 ```
 
 ## 版本规则
@@ -22,8 +22,8 @@ victor-infrastructure/src/main/resources/db/migration/
 
 | 版本 | 文件 | 说明 |
 |------|------|------|
-| V1 | init_schema.sql | 初始化 6 张核心表 |
-| V2 | add_experiment_whitelist.sql | 新增实验白名单表 |
+| V1 | init_schema.sql | 初始化 14 张表（实验、层、域、分桶、配置、白名单、审批、报告、CUPED、用户、RBAC 角色/用户角色/角色权限、报告任务） |
+| V2 | simplify_experiment_status.sql | 实验状态从 12 个简化为 5 个（draft / pending_approval / running / stopped / archive） |
 
 ## 执行时机
 
@@ -58,13 +58,13 @@ CREATE TABLE IF NOT EXISTS `victor_xxx` (
 ### 查看迁移状态
 
 ```bash
-mvn flyway:info -pl victor-infrastructure
+mvn flyway:info -pl victor-service
 ```
 
 ### 清理并重新迁移（仅开发环境）
 
 ```bash
-mvn flyway:clean flyway:migrate -pl victor-infrastructure
+mvn flyway:clean flyway:migrate -pl victor-service
 ```
 
 ::: danger 警告

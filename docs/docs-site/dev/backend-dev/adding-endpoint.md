@@ -50,7 +50,7 @@ public class ExperimentService {
 
 ### 3. 实现 Controller
 
-在 `victor-web` 中实现 REST 端点：
+在 `victor-starter/src/main/java/com/gateflow/victor/controller/` 下实现 REST 端点：
 
 ```java
 @RestController
@@ -62,6 +62,7 @@ public class ExperimentController {
     private final ExperimentService experimentService;
 
     @PostMapping
+    @RequirePermission(Permission.CREATE_EXPERIMENT)  // 权限校验
     @Operation(summary = "创建实验")
     public ExperimentResponse create(@RequestBody @Valid CreateExperimentRequest request) {
         Experiment experiment = experimentService.createExperiment(request);
@@ -69,6 +70,10 @@ public class ExperimentController {
     }
 }
 ```
+
+::: tip 权限控制
+使用 `@RequirePermission` 注解控制接口访问权限。系统通过 `PermissionInterceptor` 从 JWT Token 中提取用户角色并校验权限。无需认证的接口（`/api/v1/auth/**`、`/api/v1/config/**`、`/api/v1/bucketing/**`）在 `SecurityConfig` 中白名单放行。
+:::
 
 ### 4. 添加 Swagger 注解
 
@@ -117,8 +122,23 @@ class ExperimentControllerTest {
 
 | Controller | 路径 | 说明 |
 |-----------|------|------|
-| ExperimentController | /api/v1/experiments | 实验管理 |
-| LayerController | /api/v1/layers | 层级管理 |
-| VariantController | /api/v1/variants | 变体管理 |
-| ConfigController | /api/v1/config | SDK 配置 |
-| EventController | /api/v1/events | 事件上报 |
+| AuthController | `/api/v1/auth` | JWT 登录/注册 |
+| ExperimentController | `/api/v1/experiments` | 实验管理 |
+| ExperimentStatisticsController | `/api/v1/experiments` | 实验统计分析 |
+| ExperimentVersionController | `/api/v1/experiments/{expId}/versions` | 实验版本管理 |
+| ExperimentReportController | `/api/v1/reports` | 分析报告 |
+| LayerController | `/api/v1/layers` | 层级管理 |
+| DomainController | `/api/v1/domains` | 业务域管理 |
+| BucketController | `/api/v1/buckets` | 分桶/变体管理 |
+| BucketingController | `/api/v1/bucketing` | 运行时分流 |
+| ConfigController | `/api/v1/config` | SDK 配置拉取 |
+| EventController | `/api/v1/events` | 事件上报 |
+| MetricsController | `/api/v1/metrics` | 指标查询 |
+| BanditController | `/api/v1/bandit` | 多臂老虎机优化 |
+| BayesianAnalysisController | `/api/v1/analysis` | 贝叶斯分析 |
+| PowerAnalysisController | `/api/v1/power-analysis` | 样本量估算 |
+| RampController | `/api/v1/ramp` | 灰度自动推进 |
+| TrafficMapController | `/api/v1/traffic` | 流量地图 |
+| ExperimentWhitelistController | `/api/v1/whitelist` | 白名单管理 |
+| RbacController | `/api/v1/rbac` | 角色权限管理 |
+| SubgroupAnalysisController | `/api/v1/subgroup-analysis` | 子群分析 |

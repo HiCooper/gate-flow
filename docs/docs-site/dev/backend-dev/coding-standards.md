@@ -56,15 +56,15 @@ public class ExperimentService {
 严格遵循自底向上的依赖关系：
 
 ```
-victor-common → victor-domain → victor-bucketing → victor-infrastructure → victor-service → victor-web
+victor-common → victor-domain → victor-service → victor-starter
+victor-common ← victor-sdk (可嵌入 BucketEngine)
 ```
 
-- `victor-common`: 纯工具类，无 Spring 依赖
+- `victor-common`: 纯 Java 工具库（含 BucketEngine 分桶引擎），无 Spring 依赖
 - `victor-domain`: 实体、DTO，无业务逻辑
-- `victor-bucketing`: 纯算法，无 Spring 依赖
-- `victor-infrastructure`: 数据访问层
-- `victor-service`: 业务逻辑层
-- `victor-web`: REST 控制器
+- `victor-service`: 业务逻辑层 + 数据访问 + 管道 + 统计分析
+- `victor-sdk`: Java 客户端 SDK（可独立内嵌 victor-common 的分桶算法）
+- `victor-starter`: Spring Boot 启动 + REST 控制器 + 安全配置
 
 ### 异常处理
 

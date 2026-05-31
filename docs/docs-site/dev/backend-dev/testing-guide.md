@@ -20,7 +20,7 @@ victor-service/src/test/java/com/gateflow/victor/
 │   │   └── ExperimentServiceTest.java
 │   └── config/
 │       └── ConfigServiceTest.java
-victor-web/src/test/java/com/gateflow/victor/
+victor-starter/src/test/java/com/gateflow/victor/
 └── controller/
     └── ExperimentControllerTest.java
 ```
@@ -86,7 +86,7 @@ cd backend/victor-ab
 mvn test
 
 # 运行单个模块测试
-mvn test -pl victor-bucketing
+mvn test -pl victor-service
 
 # 运行单个测试类
 mvn test -Dtest=BucketEngineTest
@@ -94,7 +94,7 @@ mvn test -Dtest=BucketEngineTest
 
 ## 分桶引擎测试
 
-`victor-bucketing` 模块的测试确保分桶算法跨平台一致性：
+`victor-common` 中的 BucketEngine 测试确保分桶算法跨平台一致性：
 
 ```java
 @Test

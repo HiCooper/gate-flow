@@ -31,7 +31,7 @@ class MyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         GateFlow.init(this, Config.Builder()
-            .baseUrl("http://localhost:8080")
+            .baseUrl("http://localhost:8081")
             .apiKey("your-api-key")
             .build())
     }

@@ -39,7 +39,7 @@ pnpm dev:marketing # 仅启动营销站点
 cd backend/victor-ab
 docker-compose up -d mysql redis
 mvn clean install
-cd victor-web && mvn spring-boot:run
+cd victor-starter && mvn spring-boot:run
 ```
 
 ## 详细文档

@@ -5,7 +5,7 @@ import type {
   PaginatedResponse,
 } from '../types';
 
-const API_BASE = '/api/v1/reports';
+const API_BASE = '/api/v1/admin/reports';
 
 // ============================================
 // Report APIs

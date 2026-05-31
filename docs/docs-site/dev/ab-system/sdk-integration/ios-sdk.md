@@ -32,7 +32,7 @@ dependencies: [
 ```swift
 import GateFlow
 
-GateFlow.initialize(baseURL: "http://localhost:8080", apiKey: "your-key")
+GateFlow.initialize(baseURL: "http://localhost:8081", apiKey: "your-key")
 ```
 
 ### 获取变体

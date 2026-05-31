@@ -67,52 +67,45 @@ graph TB
 
 ```mermaid
 graph TD
-    Web[victor-web<br/>Web 入口] --> Service
-    Web --> Infra
-    Web --> Domain
+    Starter[victor-starter<br/>应用入口 + Controllers] --> Service[victor-service<br/>业务逻辑 · 管道 · 统计]
+    Starter --> Domain[victor-domain<br/>领域模型]
 
-    Service[victor-service<br/>业务服务] --> Bucketing
     Service --> Domain
-    Service --> Infra
 
-    Pipeline[victor-pipeline<br/>数据管道] --> Infra
-    Pipeline --> Domain
+    SDK[victor-sdk<br/>客户端 SDK] --> Domain
+    SDK -.->|可嵌入| Common[victor-common<br/>BucketEngine · 枚举 · 工具]
 
-    Stats[victor-stats<br/>统计引擎] --> Domain
+    Domain --> Common
 
-    SDK[victor-sdk<br/>客户端 SDK] --> Bucketing
-    SDK --> Domain
-
-    Bucketing[victor-bucketing<br/>分桶引擎<br/>纯 Java,无 Spring] --> Domain
-
-    Infra[victor-infrastructure<br/>基础设施] --> Domain
-
-    Domain[victor-domain<br/>领域模型] --> Common
-
-    Common[victor-common<br/>公共模块]
-
-    style Bucketing fill:#e1f5e1
-    style Stats fill:#fff2e1
+    style Common fill:#e1f5e1
 ```
 
-> 绿色模块 `victor-bucketing` 是纯 Java 实现，无 Spring 依赖，可直接嵌入客户端 SDK。
+> 绿色模块 `victor-common` 是纯 Java 实现，无 Spring 依赖。`BucketEngine` 可直接嵌入客户端 SDK（Java / Kotlin / Swift / TypeScript）。
 
 ## 实验生命周期
+
+实验遵循 5 状态简化生命周期（经由 Flyway V2 迁移从 12 个状态简化为 5 个）：
 
 ```mermaid
 stateDiagram-v2
     [*] --> Draft: 创建实验
-    Draft --> Review: 提交审批
-    Review --> Draft: 驳回
-    Review --> Ramp: 审批通过
-    Ramp --> Running: 放量完成
-    Running --> Paused: 手动暂停
-    Paused --> Running: 恢复
-    Running --> Analyzing: 实验结束
-    Analyzing --> Decided: 做出决策
-    Decided --> Archived: 存档
-    Archived --> [*]
+    Draft --> PendingApproval: 提交审批
+    PendingApproval --> Draft: 驳回
+    PendingApproval --> Running: 审批通过
+    Running --> Stopped: 停止实验
+    Stopped --> Archive: 归档
+    Archive --> [*]
 ```
+
+| 状态 | 说明 | 允许的操作 |
+|------|------|-----------|
+| `draft` | 草稿，实验设计中 | 编辑、提交审批、启动、删除 |
+| `pending_approval` | 待审批 | 审批通过、驳回 |
+| `running` | 运行中，分流活跃 | 停止（可启用 auto_ramp 自动放量） |
+| `stopped` | 已停止，数据收集结束 | 归档、查看分析报告 |
+| `archive` | 已归档，知识沉淀 | 查看 |
+
+> 灰度放量（ramp）不再是独立状态，而是 running 状态的特性（通过 `auto_ramp_enabled` 标志和 `ramp_config` JSON 配置实现）。`RampScheduler` 每 5 分钟检查 Redis 健康结果并自动推进流量比例。
 
 ## 分桶算法流程
 
@@ -159,6 +152,25 @@ flowchart TD
 | Tailwind CSS v4 | 样式系统 |
 | Zustand | 状态管理 |
 | Recharts | 图表库 |
+
+## 安全架构
+
+`victor-starter` 通过以下组件实现 JWT + RBAC 安全模型：
+
+| 组件 | 职责 |
+|------|------|
+| `JwtTokenProvider` | JWT Token 生成与验证 |
+| `JwtAuthenticationFilter` | 从请求头提取 Bearer Token，设置 SecurityContext |
+| `PermissionInterceptor` | 拦截 `@RequirePermission` 注解，校验用户权限 |
+| `SecurityConfig` | 白名单配置（`/api/v1/auth/**`、`/api/v1/config/**`、`/api/v1/bucketing/**` 无需认证） |
+
+**4 个角色**:
+- **ADMIN** — 全部权限（含用户管理）
+- **OPERATOR** — 实验创建/编辑/审批/查看分析
+- **VIEWER** — 只读（查看实验和分析）
+- **SDK_CLIENT** — 仅分流/配置/事件 API 访问
+
+**10 项权限**: `CREATE_EXPERIMENT`、`EDIT_EXPERIMENT`、`DELETE_EXPERIMENT`、`VIEW_EXPERIMENT`、`APPROVE_EXPERIMENT`、`SUBMIT_APPROVAL`、`VIEW_TRAFFIC`、`VIEW_ANALYSIS`、`POWER_ANALYSIS`、`MANAGE_USERS`
 
 ## 详细文档
 

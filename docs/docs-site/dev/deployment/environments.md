@@ -6,7 +6,7 @@
 
 | 环境 | 用途 | 域名示例 |
 |------|------|----------|
-| dev | 本地开发 | localhost:8080 |
+| dev | 本地开发 | localhost:8081 |
 | test | 集成测试 | test-api.gateflow.com |
 | staging | 预发布 | staging-api.gateflow.com |
 | prod | 生产环境 | api.gateflow.com |
@@ -23,7 +23,7 @@ java -jar app.jar --spring.profiles.active=prod
 ## 配置文件
 
 ```
-victor-web/src/main/resources/
+victor-starter/src/main/resources/
 ├── application.yml          # 默认配置
 ├── application-dev.yml      # 开发环境
 ├── application-test.yml    # 测试环境

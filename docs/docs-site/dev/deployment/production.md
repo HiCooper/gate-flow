@@ -12,7 +12,7 @@
          ┌───────────────────┼───────────────────┐
          │                   │                   │
     ┌────▼────┐        ┌────▼────┐        ┌────▼────┐
-    │ victor-web │        │ victor-web │        │ victor-web │
+    │ victor-starter │        │ victor-starter │        │ victor-starter │
     └────┬────┘        └────┬────┘        └────┬────┘
          │                   │                   │
          └───────────────────┼───────────────────┘
@@ -31,14 +31,14 @@
 ```bash
 cd backend/victor-ab
 mvn clean package -DskipTests
-java -jar victor-web/target/victor-web-1.0.0.jar
+java -jar victor-starter/target/victor-starter-1.0.0.jar
 ```
 
 ### 方式二: Docker 部署
 
 ```dockerfile
 FROM eclipse-temurin:17-jre-alpine
-COPY target/victor-web-1.0.0.jar app.jar
+COPY target/victor-starter-1.0.0.jar app.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/app.jar"]
 ```
@@ -57,7 +57,7 @@ ENTRYPOINT ["java", "-jar", "/app.jar"]
 
 ```bash
 # 检查应用健康状态
-curl http://localhost:8080/actuator/health
+curl http://localhost:8081/actuator/health
 
 # 预期响应
 {"status":"UP"}

@@ -37,10 +37,10 @@ docker-compose up -d mysql redis
 
 ```bash
 cd backend/victor-ab
-mvn spring-boot:run -pl victor-web
+mvn spring-boot:run -pl victor-starter
 ```
 
-后端服务将在 `http://localhost:8080` 启动。
+后端服务将在 `http://localhost:8081` 启动。
 
 ### 4. 启动前端
 
@@ -57,7 +57,7 @@ pnpm dev:marketing # 营销站点 (port 3000)
 
 ### 后端配置
 
-数据库配置位于 `backend/victor-ab/victor-web/src/main/resources/application.yml`:
+数据库配置位于 `backend/victor-ab/victor-starter/src/main/resources/application.yml`:
 
 ```yaml
 spring:
@@ -75,7 +75,7 @@ spring:
 前端环境变量位于各应用的 `.env.development`:
 
 ```env
-VITE_API_BASE_URL=http://localhost:8080
+VITE_API_BASE_URL=http://localhost:8081
 ```
 
 ## 常用命令
@@ -92,7 +92,7 @@ mvn clean package
 mvn test
 
 # 运行单个模块测试
-mvn test -pl victor-bucketing
+mvn test -pl victor-service
 ```
 
 ### 前端
@@ -112,6 +112,6 @@ pnpm build
 
 完成后可访问以下地址确认服务状态：
 
-- Swagger UI: http://localhost:8080/swagger-ui.html
+- Swagger UI: http://localhost:8081/swagger-ui.html
 - 管理控制台: http://localhost:3001
 - 营销站点: http://localhost:3000

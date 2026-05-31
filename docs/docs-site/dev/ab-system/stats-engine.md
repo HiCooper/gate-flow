@@ -1,16 +1,21 @@
 # 统计引擎
 
-本文档介绍 GateFlow 内置的统计算法，实现位于 `victor-stats` 模块。
+本文档介绍 GateFlow 内置的统计算法，实现位于 `victor-service/stats/` 包内（`com.gateflow.victor.stats.algorithm.*`），由 `StatsEngine`（`com.gateflow.victor.stats.engine.StatsEngine`）统一调度。
 
 ## 核心算法
 
 | 算法 | 用途 | 状态 |
 |------|------|------|
 | Z-Test | 显著性检验 | 已实现 |
-| mSPRT | 序贯检验,支持早停 | 已实现 |
+| mSPRT | 序贯检验，支持早停 | 已实现 |
 | CUPED | 方差缩减 | 已实现 |
 | BH Correction | 多重检验校正 (Benjamini-Hochberg) | 已实现 |
 | SRM Check | 样本比率匹配校验 | 已实现 |
+| Multi-Armed Bandit | 多臂老虎机流量优化（Thompson Sampling / Epsilon-Greedy / UCB） | 已实现 |
+| Bayesian Analysis | 贝叶斯后验分析（后验概率、最优概率、可信区间） | 已实现 |
+| Power Analysis | 样本量估算、最小可检测效应量 (MDE) 计算 | 已实现 |
+| Subgroup Analysis | 按用户群组分层分析 | 已实现 |
+| AA Validation | AA 测试系统校准校验 | 已实现 |
 
 ## 算法详解
 
@@ -136,6 +141,48 @@ double cupedEstimate = CUPED.apply(originalMetric, preExperimentData);
 // 多重检验校正
 double[] adjustedPValues = BenjaminiHochberg.correct(pValues);
 ```
+
+### Multi-Armed Bandit
+
+多臂老虎机算法动态调整流量分配，将更多流量导向表现更好的变体。实现位于 `victor-service/stats/` 和 `victor-service/bandit/BanditService.java`。
+
+**支持策略**:
+
+| 策略 | 说明 | 适用场景 |
+|------|------|---------|
+| **Thompson Sampling** | Beta-Bernoulli 共轭模型，按后验概率采样分配 | 转化率等二分类指标 |
+| **Epsilon-Greedy** | ε 概率随机探索，(1-ε) 概率选择最佳 | 简单快速的场景 |
+| **UCB** (Upper Confidence Bound) | 选择「均值 + 置信上界」最大的臂 | 平衡探索与利用 |
+
+### Bayesian Analysis
+
+贝叶斯分析提供与频率学派互补的统计推断。实现位于 `victor-service/analysis/BayesianAnalysisService.java`。
+
+**输出**:
+- 每个变体的后验概率分布
+- 每个变体成为最优的概率 (Probability of Being Best)
+- 贝叶斯可信区间 (Credible Interval)
+- 预期损失 (Expected Loss)
+
+### Power Analysis
+
+样本量估算帮助在实验开始前确定所需的样本量和运行时间。实现位于 `victor-service/analysis/PowerAnalysisService.java` 和 `victor-service/stats/algorithm/PowerAnalysis.java`。
+
+**支持**:
+- 给定基线转化率、MDE（最小可检测效应量）、α、β，计算所需样本量
+- 事后功效分析 (Post-hoc Power)
+
+### 端到端实验分析
+
+`StatsEngine.analyzeExperiment()` 整合全部算法，生成完整的 `ExperimentReport`：
+
+1. 查询所有分桶统计数据（来自 ClickHouse）
+2. SRM 检验 — 验证分流比例
+3. CUPED 方差缩减 — 使用实验前数据
+4. 主指标 Z-Test（CUPED 增强）
+5. 辅助指标检验 + BH 校正
+6. 护栏指标 mSPRT 序贯检验
+7. 生成决策建议（LAUNCH / DO_NOT_LAUNCH / CONTINUE_EXPERIMENT）
 
 ## 离线定时计算
 

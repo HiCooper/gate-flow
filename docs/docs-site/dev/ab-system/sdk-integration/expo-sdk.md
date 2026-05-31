@@ -18,7 +18,7 @@ import { GateFlowProvider } from '@gate-flow/expo';
 function App() {
   return (
     <GateFlowProvider
-      baseUrl="http://localhost:8080"
+      baseUrl="http://localhost:8081"
       apiKey="your-api-key"
     >
       <YourApp />

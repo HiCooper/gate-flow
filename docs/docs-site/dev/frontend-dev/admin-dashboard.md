@@ -60,7 +60,7 @@ pnpm build
 
 ```typescript
 // apps/admin/.env.development
-VITE_API_BASE_URL=http://localhost:8080
+VITE_API_BASE_URL=http://localhost:8081
 ```
 
 ## 状态管理

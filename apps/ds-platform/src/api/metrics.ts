@@ -10,7 +10,7 @@ import type {
   TrendDataPoint,
 } from '../types';
 
-const API_BASE = '/api/v1/metrics';
+const API_BASE = '/api/v1/admin/metrics';
 
 export interface GetRealtimeMetricsParams {
   expId: string;

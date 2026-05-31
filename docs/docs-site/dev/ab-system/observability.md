@@ -18,7 +18,7 @@
 
 ```mermaid
 graph TB
-    subgraph victor-web
+    subgraph victor-starter
         HTTP[HTTP API]
         KafkaP[Kafka Producer]
         JDBC1[JDBC/MySQL]
@@ -29,7 +29,7 @@ graph TB
         Topic[victor-events]
     end
 
-    subgraph victor-stats
+    subgraph victor-service
         Sched[@Scheduled Jobs]
         JDBC2[JDBC/MySQL]
         CH[ClickHouse]
@@ -66,7 +66,7 @@ graph TB
 
 ### 依赖
 
-vitor-web 和 victor-stats 的 `pom.xml` 中均已添加：
+victor-starter 和 victor-service 的 `pom.xml` 中均已添加：
 
 ```xml
 <dependency>

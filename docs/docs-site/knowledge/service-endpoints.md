@@ -54,10 +54,12 @@ pnpm docs:dev       # Docs Site (5173)
 
 | 服务 | 说明 | 本地端口 | 仓库 |
 |------|------|---------|------|
-| **Victor API** | 主后端服务 (Spring Boot) | `http://localhost:8080` | `HiCooper/victor-ab` |
-| **Swagger UI** | API 交互式文档 | `http://localhost:8080/swagger-ui.html` | 同上 |
-| **OpenAPI Spec** | OpenAPI JSON 规范 | `http://localhost:8080/v3/api-docs` | 同上 |
-| **Health Check** | 健康检查端点 | `http://localhost:8080/actuator/health` | 同上 |
+| **Victor API** | 主后端服务 (Spring Boot) | `http://localhost:8081` | `HiCooper/victor-ab` |
+| **Swagger UI** | API 交互式文档 | `http://localhost:8081/swagger-ui.html` | 同上 |
+| **OpenAPI Spec** | OpenAPI JSON 规范 | `http://localhost:8081/v3/api-docs` | 同上 |
+| **Health Check** | 健康检查端点 | `http://localhost:8081/actuator/health` | 同上 |
+| **Auth (Login)** | JWT 登录获取 Token | `POST http://localhost:8081/api/v1/auth/login` | 同上 |
+| **Auth (Register)** | 用户注册 | `POST http://localhost:8081/api/v1/auth/register` | 同上 |
 
 ### 启动方式
 
@@ -74,7 +76,7 @@ docker-compose up -d mysql redis
 mvn clean install
 
 # 启动后端
-mvn spring-boot:run -pl victor-web
+mvn spring-boot:run -pl victor-starter
 ```
 
 ## 基础设施
@@ -148,18 +150,30 @@ git push
 
 | 分组 | 路径前缀 | 说明 |
 |------|---------|------|
-| 实验管理 | `/api/v1/experiments` | 实验 CRUD、启停 |
-| 层级管理 | `/api/v1/layers` | 实验层级 |
-| 变体管理 | `/api/v1/variants` | 实验变体 |
-| 流量分配 | `/api/v1/bucket` | 运行时分桶 |
-| 配置获取 | `/api/v1/config` | SDK 配置 |
+| 认证授权 | `/api/v1/auth` | JWT 登录/注册 |
+| 实验管理 | `/api/v1/experiments` | 实验 CRUD、统计、版本 |
+| 分层管理 | `/api/v1/layers` | 实验层级 |
+| 分桶管理 | `/api/v1/buckets` | 分桶/变体配置 |
+| 运行时分流 | `/api/v1/bucketing` | 实验分流请求 |
+| 域管理 | `/api/v1/domains` | 业务域管理 |
+| 配置获取 | `/api/v1/config` | SDK 配置拉取 |
 | 事件上报 | `/api/v1/events` | 事件采集 |
+| 分析报告 | `/api/v1/reports` | 统计分析报告 |
+| Bandit 优化 | `/api/v1/bandit` | 多臂老虎机 |
+| 贝叶斯分析 | `/api/v1/analysis` | 贝叶斯后验分析 |
+| 功效分析 | `/api/v1/power-analysis` | 样本量估算 |
+| 灰度推进 | `/api/v1/ramp` | 灰度自动调度 |
+| 流量地图 | `/api/v1/traffic` | 流量可视化 |
+| 白名单 | `/api/v1/whitelist` | 白名单管理 |
+| RBAC | `/api/v1/rbac` | 角色权限管理 |
+| 子群分析 | `/api/v1/subgroup-analysis` | 群组分层分析 |
+| 指标查询 | `/api/v1/metrics` | 指标数据查询 |
 
 ## 部署信息
 
 | 环境 | API 地址 | 前端地址 | 数据库 | 状态 |
 |------|---------|---------|--------|------|
-| **Local** | `localhost:8080` | `localhost:3001` | Docker Compose | 开发中 |
+| **Local** | `localhost:8081` | `localhost:3001` | Docker Compose | 开发中 |
 | **Staging** | 待配置 | 待配置 | 待配置 | 未部署 |
 | **Production** | 待配置 | 待配置 | 待配置 | 未部署 |
 
