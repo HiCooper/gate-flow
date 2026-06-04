@@ -7,6 +7,8 @@ export class PageCollector {
   private callback: PageViewCallback;
   private endpoint: string;
   private lastUrl: string = '';
+  private pageEnterTime: number = 0;
+  private currentStayDuration: number = 0;
 
   constructor(config: PageViewConfig, callback: PageViewCallback, endpoint: string) {
     this.config = {
@@ -18,61 +20,83 @@ export class PageCollector {
   }
 
   start(): void {
-    // Listen for page load
-    window.addEventListener('load', this.handlePageLoad);
+    try {
+      this.pageEnterTime = Date.now();
+      this.lastUrl = window.location.href;
 
-    // Listen for visibility change
-    document.addEventListener('visibilitychange', this.handleVisibilityChange);
+      // Listen for page load
+      window.addEventListener('load', this.handlePageLoad);
 
-    // Listen for beforeunload
-    window.addEventListener('beforeunload', this.handleUnload);
+      // Listen for visibility change
+      document.addEventListener('visibilitychange', this.handleVisibilityChange);
 
-    // SPA routing
-    if (this.config.SPA) {
+      // Listen for beforeunload (use sendBeacon for reliability)
+      window.addEventListener('beforeunload', this.handleUnload);
+      window.addEventListener('pagehide', this.handleUnload);
+
+      // SPA routing detection
       this.interceptHistory();
       window.addEventListener('popstate', this.handleRouteChange);
-    }
 
-    // Initial page view
-    this.lastUrl = window.location.href;
+      // Initial page view
+      this.reportPageView();
+    } catch (error) {
+      console.warn('[PageCollector] Failed to start:', error);
+    }
   }
 
   stop(): void {
     window.removeEventListener('load', this.handlePageLoad);
     document.removeEventListener('visibilitychange', this.handleVisibilityChange);
     window.removeEventListener('beforeunload', this.handleUnload);
+    window.removeEventListener('pagehide', this.handleUnload);
     window.removeEventListener('popstate', this.handleRouteChange);
   }
 
   private handlePageLoad = (): void => {
+    this.pageEnterTime = Date.now();
     this.reportPageView();
   };
 
   private handleRouteChange = (): void => {
     if (window.location.href !== this.lastUrl) {
-      this.reportPageView();
+      // Report stay duration for previous page
+      this.reportStayDuration();
+
+      // Report new page view
+      this.pageEnterTime = Date.now();
       this.lastUrl = window.location.href;
+      this.reportPageView();
     }
   };
 
   private handleVisibilityChange = (): void => {
     if (document.visibilityState === 'hidden') {
-      this.reportPageView();
+      this.reportStayDuration();
+    } else if (document.visibilityState === 'visible') {
+      this.pageEnterTime = Date.now();
     }
   };
 
   private handleUnload = (): void => {
+    this.reportStayDuration();
     const data = this.buildPageViewData();
     const blob = new Blob([JSON.stringify({ events: [data] })], { type: 'application/json' });
     navigator.sendBeacon?.(this.endpoint, blob);
   };
+
+  private reportStayDuration(): void {
+    const duration = Math.round((Date.now() - this.pageEnterTime) / 1000);
+    this.currentStayDuration = duration;
+  }
 
   private buildPageViewData(): EventData {
     const spmData = this.extractBodySpmData();
     return {
       url: window.location.href,
       title: document.title,
-      referrer: document.referrer,
+      referrer: this.config.referrer ? document.referrer : undefined,
+      stayDuration: this.currentStayDuration,
       ...spmData,
     };
   }
@@ -82,18 +106,25 @@ export class PageCollector {
   }
 
   private interceptHistory(): void {
-    const originalPushState = history.pushState;
-    const originalReplaceState = history.replaceState;
+    try {
+      const originalPushState = history.pushState.bind(history);
+      const originalReplaceState = history.replaceState.bind(history);
 
-    history.pushState = (...args) => {
-      originalPushState.apply(history, args);
-      this.handleRouteChange();
-    };
+      history.pushState = (...args) => {
+        originalPushState(...args);
+        this.handleRouteChange();
+      };
 
-    history.replaceState = (...args) => {
-      originalReplaceState.apply(history, args);
-      this.handleRouteChange();
-    };
+      history.replaceState = (...args) => {
+        originalReplaceState(...args);
+        // Only track if URL actually changed
+        if (args[2] && args[2] !== this.lastUrl) {
+          this.handleRouteChange();
+        }
+      };
+    } catch {
+      // History API interception not available
+    }
   }
 
   private extractBodySpmData(): { spmCode?: string; spmLevel?: number } {
@@ -108,3 +139,4 @@ export class PageCollector {
     }
     return {};
   }
+}

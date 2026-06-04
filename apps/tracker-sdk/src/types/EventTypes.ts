@@ -1,3 +1,9 @@
+export interface ExperimentTag {
+  expId: string;
+  variant: string;
+  layer: string;
+}
+
 export interface EventDTO {
   eventId: string;
   eventType: string;
@@ -13,6 +19,7 @@ export interface EventDTO {
   device?: DeviceData;
   context?: ContextData;
   data?: EventData;
+  experimentTags?: ExperimentTag[];
 }
 
 export interface PageData {
@@ -51,8 +58,12 @@ export interface EventData {
   clickY?: number;
   exposureDuration?: number;
   exposureRatio?: number;
-  spmCode?: string;  // SPM点位编码
-  spmLevel?: number; // SPM层级 (0-3)
+  spmCode?: string;
+  spmLevel?: number;
+  errorMessage?: string;
+  errorStack?: string;
+  errorType?: string;
+  tagName?: string;
   [key: string]: unknown;
 }
 
@@ -62,6 +73,8 @@ export interface TrackerConfig {
   autoTrack?: AutoTrackConfig;
   batch?: BatchConfig;
   offline?: OfflineConfig;
+  debug?: boolean | DebugConfig;
+  gateFlow?: GateFlowConfig;
 }
 
 export interface AutoTrackConfig {
@@ -70,6 +83,7 @@ export interface AutoTrackConfig {
   exposure?: boolean | ExposureConfig;
   scroll?: boolean | ScrollConfig;
   stay?: boolean | StayConfig;
+  error?: boolean | ErrorConfig;
 }
 
 export interface PageViewConfig {
@@ -103,6 +117,11 @@ export interface StayConfig {
   threshold?: number;
 }
 
+export interface ErrorConfig {
+  enabled?: boolean;
+  dedup?: boolean;
+}
+
 export interface BatchConfig {
   maxSize?: number;
   interval?: number;
@@ -113,12 +132,23 @@ export interface OfflineConfig {
   maxQueueSize?: number;
 }
 
+export interface DebugConfig {
+  enabled?: boolean;
+  maxLogEntries?: number;
+}
+
+export interface GateFlowConfig {
+  enabled?: boolean;
+  userInitEndpoint?: string;
+}
+
 export type EventType =
   | 'page_view'
   | 'click'
   | 'exposure'
   | 'scroll'
   | 'stay'
+  | 'error'
   | 'custom'
   | 'session_start'
   | 'session_end'

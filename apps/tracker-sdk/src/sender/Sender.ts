@@ -18,7 +18,6 @@ export class Sender {
       interval: config.interval ?? 2000,
     };
 
-    // Start periodic flush
     this.timer = window.setInterval(() => {
       this.flush();
     }, this.config.interval);
@@ -32,8 +31,13 @@ export class Sender {
   }
 
   async flush(): Promise<void> {
-    if (this.queue.size() >= this.config.maxSize) {
-      await this.queue.flush(this.endpoint);
+    // Flush whenever queue is non-empty (not just when >= maxSize)
+    if (this.queue.size() > 0) {
+      try {
+        await this.queue.flush(this.endpoint);
+      } catch {
+        // Logged in EventQueue
+      }
     }
   }
 }
