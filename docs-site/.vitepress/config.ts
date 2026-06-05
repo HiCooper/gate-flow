@@ -4,7 +4,7 @@ import { withMermaid } from 'vitepress-plugin-mermaid'
 export default withMermaid(defineConfig({
   title: 'GateFlow',
   description: 'A/B 测试实验平台文档',
-  base: '/',
+  base: '/gate-flow/',
   lang: 'zh-CN',
 
   head: [
@@ -212,7 +212,7 @@ export default withMermaid(defineConfig({
 
     // 编辑链接
     editLink: {
-      pattern: 'https://github.com/HiCooper/gate-flow/edit/main/docs/docs-site/:path',
+      pattern: 'https://github.com/HiCooper/gate-flow/edit/main/docs-site/:path',
       text: '在 GitHub 上编辑此页',
     },
 
