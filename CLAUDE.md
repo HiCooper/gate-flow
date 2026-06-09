@@ -92,10 +92,9 @@ Run from individual app directories:
 |--------|---------|----------------|
 | `victor-common` | Utilities, constants, base exceptions, bucketing engine | No Spring dependencies — portable to SDK |
 | `victor-domain` | Entities, DTOs, event models | Depends only on common |
-| `victor-stats-engine` | Statistical engine: SRM, CUPED, Z-test, BH correction, mSPRT | Also used by external victor-stats-scheduler |
-| `victor-service` | Business logic, MyBatis mappers, Kafka pipeline, event ingestion | Depends on domain, stats-engine |
+| `victor-service` | Business logic, MyBatis mappers, Kafka pipeline, event ingestion, stats engine (SRM, CUPED, Z-test, BH, mSPRT) | Depends on domain, common |
 | `victor-sdk` | Client SDK for downstream services | Depends on common |
-| `victor-web` | REST controllers, Spring Boot entry point | Depends on domain, service, stats-engine |
+| `victor-starter` | REST controllers, Spring Boot entry point, security config | Depends on domain, service |
 
 ### Build & Run Commands
 
@@ -105,14 +104,14 @@ From `backend/victor-ab/`:
 - `mvn test` — run all tests
 - `mvn test -Dtest=BucketEngineTest` — run a single test class
 - `mvn test -pl victor-service` — run tests for one module
-- `mvn spring-boot:run -pl victor-web` — run the application
+- `mvn spring-boot:run -pl victor-starter` — run the application
 
 Docker:
 - `docker-compose up` from `backend/victor-ab/` spins up MySQL, Redis, and the service.
 
 ### Application Config
 
-`victor-web/src/main/resources/application.yml`:
+`victor-starter/src/main/resources/application.yml`:
 - Server port: `8081`
 - DB: `victor_experiment` on localhost:3306
 - Redis: localhost:6379
@@ -133,12 +132,11 @@ Docker:
 - `UserAssignment` tracks which variant a user was assigned to.
 
 **Pipeline & Stats**
-- `victor-service` ingests events via REST (`EventController`) or Kafka, writes to ClickHouse.
-- `victor-stats` implements sequential testing (mSPRT), variance reduction (CUPED), and multiple comparison correction (BH).
+- `victor-service` ingests events via REST (`EventController`) or Kafka, writes to ClickHouse, and provides the stats engine (mSPRT, CUPED, BH correction).
 
 ## API Endpoints
 
-REST controllers in `victor-web` under `/api/v1/`:
+REST controllers in `victor-starter` under `/api/v1/`:
 - `ExperimentController` — `/api/v1/experiments`
 - `LayerController` — `/api/v1/layers`
 - `VariantController` — `/api/v1/variants`
@@ -155,5 +153,5 @@ REST controllers in `victor-web` under `/api/v1/`:
 ## Development Workflow
 
 1. Start infrastructure: `docker-compose up mysql redis` from `backend/victor-ab/`
-2. Start backend: `mvn spring-boot:run -pl victor-web` from `backend/victor-ab/`
+2. Start backend: `mvn spring-boot:run -pl victor-starter` from `backend/victor-ab/`
 3. Start frontend(s): `pnpm dev:admin` or `pnpm dev:marketing` from repo root

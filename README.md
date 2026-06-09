@@ -171,16 +171,12 @@ packages/
 
 ```
 backend/victor-ab/
-├── victor-common/              # 公共模块：常量、枚举、工具类
+├── victor-common/              # 公共模块：常量、枚举、工具类、分桶引擎
 ├── victor-domain/              # 领域模型：实体、DTO、事件
-├── victor-bucketing/           # 分桶引擎：流量分配算法
-├── victor-infrastructure/      # 基础设施：数据访问、缓存、迁移
+├── victor-service/             # 业务服务：实验管理、Kafka管道、ClickHouse、统计引擎
 │   └── src/main/resources/db/migration/  # Flyway 迁移脚本
-├── victor-service/             # 业务服务：实验、分桶、统计服务
 ├── victor-sdk/                 # 客户端SDK：Java SDK
-├── victor-pipeline/            # 数据管道：Kafka消费、ClickHouse写入
-├── victor-stats/               # 统计引擎：统计算法和模型
-├── victor-web/                 # Web层：REST API控制器
+├── victor-starter/             # Web层：REST API控制器、Spring Boot入口、安全配置
 └── scripts/                    # 数据库脚本
     ├── seed/                   # 种子数据
     ├── maintenance/            # 运维脚本
@@ -241,7 +237,7 @@ docker-compose up -d mysql redis
 mvn clean install
 
 # 启动应用
-cd victor-web
+cd victor-starter
 mvn spring-boot:run
 ```
 
@@ -359,7 +355,7 @@ http://localhost:8080/swagger-ui.html
 
 ### 后端配置
 
-主要配置文件：`backend/victor-ab/victor-web/src/main/resources/application.yml`
+主要配置文件：`backend/victor-ab/victor-starter/src/main/resources/application.yml`
 
 ```yaml
 spring:
@@ -406,9 +402,9 @@ cd backend/victor-ab
 mvn test
 
 # 运行特定模块测试
-mvn test -pl victor-bucketing   # 分桶引擎测试
-mvn test -pl victor-stats       # 统计算法测试
-mvn test -pl victor-web         # Web层测试
+mvn test -pl victor-common      # 分桶引擎和工具类测试
+mvn test -pl victor-service     # 业务服务、统计算法测试
+mvn test -pl victor-starter     # Web层测试
 ```
 
 ---
