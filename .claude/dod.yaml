@@ -1,0 +1,33 @@
+version: 1
+project: gate-flow
+acceptance:
+  specs: ["apps/**/tests/**/*.test.ts"]
+  mode: all
+quality:
+  types:
+    check: "npx tsc --noEmit"
+    mode: all; auto_fix: true
+  lint:
+    check: "npx eslint . --max-warnings 0"
+    mode: all; auto_fix: true
+  test:
+    check: "npx vitest --coverage --coverage.thresholds.lines=80 --coverage.thresholds.branches=75"
+    mode: all; auto_fix: true
+  security:
+    check: "npx audit-ci --high"
+    mode: all; auto_fix: false
+architecture:
+  constraints_file: ".claude/constraints.yaml"
+  mode: all
+escalation:
+  max_iterations_without_progress: 5
+  max_token_budget: null
+  decisions_needing_human:
+    - new_dependency
+    - experiment_metric_change
+    - traffic_split_ratio_change
+    - statistical_method_change
+    - breaking_api_change
+  ambiguous_requirements:
+    strategy: "propose_options"
+    max_options: 3

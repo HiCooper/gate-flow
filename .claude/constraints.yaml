@@ -1,0 +1,28 @@
+version: 1
+constraints:
+  - name: no_circular_deps
+    description: "模块间不得循环依赖"
+    check: "npx madge --circular --extensions ts,tsx apps/"
+    severity: error; auto_fix: true; scope: ["apps/", "backend/"]
+  - name: layer_dependency_direction
+    description: "backend → apps 单向依赖，apps 之间不得互相依赖"
+    check: "npx dependency-cruiser --validate .dependency-cruiser.js"
+    severity: error; auto_fix: false; scope: ["apps/", "backend/"]
+  - name: experiment_hash_consistency
+    description: "分流哈希算法必须是确定性的，同一用户重复进入实验必须分配到同一组"
+    check: "manual"
+    severity: error; auto_fix: false; scope: ["apps/experiment-engine/"]
+  - name: no_new_deps_without_adr
+    check: "manual"
+    severity: warning; auto_fix: false
+  - name: metric_calculation_must_be_reproducible
+    description: "实验指标计算逻辑必须有对应的单元测试覆盖，且结果可复现"
+    check: "manual"
+    severity: warning; auto_fix: true; scope: ["apps/metrics/"]
+  - name: no_pii_in_event_logs
+    description: "事件日志不得包含个人身份信息（PII），需在采集端脱敏"
+    check: "manual"
+    severity: error; auto_fix: true; scope: ["apps/"]
+anti_goals:
+  - "不要引入新的统计学库 — 使用项目已有的 jstat + 自研显著性模块"
+  - "不要引入新的实验分流框架 — 保持自研哈希分流方案"
