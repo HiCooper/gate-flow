@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git submodule *)",
+      "Bash(docker compose *)",
+      "Bash(sudo ss -tlnp)",
+      "Bash(docker rm *)",
+      "Bash(netstat -tlnp)",
+      "Bash(grep -E '$\\(printf \"%04X\" 3306\\)|$\\(printf \"%04X\" 6379\\)')",
+      "Bash(awk '{print $2}')",
+      "Bash(powershell.exe -Command \"Get-Process -Id \\(Get-NetTCPConnection -LocalPort 3306 -ErrorAction SilentlyContinue\\).OwningProcess -ErrorAction SilentlyContinue | Select-Object Name, Id\")",
+      "Bash(powershell.exe *)"
+    ]
+  }
+}
