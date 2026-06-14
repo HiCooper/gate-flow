@@ -21,8 +21,9 @@ public class BucketEngine {
      */
     public static int computeBucket(String userId, String layerId, String salt) {
         String input = userId + "#" + layerId + "#" + salt;
-        int hash = MurmurHash3.hash(input);
-        return Math.abs(hash % 10000);
+        int hash = MurmurHash3.hash32(input);
+        // Use bitmask instead of abs() to avoid Integer.MIN_VALUE overflow
+        return (hash & Integer.MAX_VALUE) % 10000;
     }
 
     /**
@@ -44,24 +45,25 @@ public class BucketEngine {
 | 平台 | 状态 | 关键文件 |
 |------|------|----------|
 | Java | 完成 | `BucketEngine.java` |
-| Kotlin | 完成 | Android SDK |
-| Swift | 开发中 | iOS SDK |
-| TypeScript | 完成 | Expo SDK |
+| Kotlin | 完成 | Android SDK `BucketEngine.kt` |
+| Swift | 完成 | iOS SDK `BucketEngine.swift` |
+| TypeScript | 完成 | Expo SDK (桥接原生) |
 
 ## 移植要求
 
 1. 实现 MurmurHash3 算法（保证与 Java 版输出一致）
 2. 使用相同的输入格式：`userId#layerId#salt`
-3. 验证测试向量：
-   - Input: `userId="user_123", layerId="layer_001", salt="v1"`
-   - Output: `bucket=7890`（所有平台必须一致）
+3. 验证测试向量（所有平台必须一致）：
 
 ## 测试向量
 
-用于验证各平台分桶一致性的标准输入输出：
+用于验证各平台分桶一致性的标准输入输出（基于标准 MurmurHash3 实现）：
 
-| userId | layerId | salt | bucket |
-|--------|---------|------|--------|
-| user_123 | layer_001 | v1 | 7890 |
-| user_456 | layer_001 | v1 | 2341 |
-| user_789 | layer_002 | v1 | 5678 |
+| userId | layerId | salt | bucket | 说明 |
+|--------|---------|------|--------|------|
+| user_123 | layer_001 | v1 | 473 | len%4=1, 单尾字节 |
+| user_456 | layer_recommend | salt_2024 | 2896 | len%4=2, 双尾字节 |
+| user_789 | layer_search | salt_prod | 1511 | len%4=3, 三尾字节 |
+| alice | default | victor_default | 7176 | len%4=0, 无尾字节 |
+
+> 注意：分桶计算使用 `(hash & Int.MAX_VALUE) % 10000` 而非 `abs(hash) % 10000`，以避免 Int.MIN_VALUE 溢出问题。

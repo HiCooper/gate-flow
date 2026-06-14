@@ -16,6 +16,11 @@ let package = Package(
             name: "GateFlowKit",
             path: "Sources/GateFlowKit"
         ),
+        .testTarget(
+            name: "GateFlowKitTests",
+            dependencies: ["GateFlowKit"],
+            path: "Tests/GateFlowKitTests"
+        ),
         .executableTarget(
             name: "SDKTest",
             dependencies: [],

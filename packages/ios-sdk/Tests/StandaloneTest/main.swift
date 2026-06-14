@@ -1,6 +1,6 @@
 import Foundation
 
-// Java backend reference values (from BucketEngineTest in victor-bucketing):
+// Standard MurmurHash3 cross-platform test vectors (Java/Kotlin/Swift must match):
 // hash32("user_123#layer_a#victor") = 1893927761
 // bucket = 7761
 
@@ -25,7 +25,8 @@ print("(Java: hash=1893927761, bucket=7761)\n")
 do {
     let input = "user_123#layer_a#victor"
     let hash = MurmurHash3.hash32(input)
-    let bucket = Int(abs(hash)) % 10000
+    // Use bitmask instead of abs() to avoid Int32.min overflow
+    let bucket = Int(hash & Int32.max) % 10000
 
     check(hash == 1893927761, "hash32 = \(hash) (expected 1893927761)")
     check(bucket == 7761, "bucket = \(bucket) (expected 7761)")

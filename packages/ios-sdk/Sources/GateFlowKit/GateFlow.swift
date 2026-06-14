@@ -25,6 +25,9 @@ public struct GateFlowOptions {
 @objcMembers public final class GateFlow: NSObject, ObservableObject {
     public static let shared = GateFlow()
 
+    /// Delegate for lifecycle callbacks.
+    public weak var delegate: GateFlowDelegate?
+
     /// Whether the SDK has been configured.
     @Published public private(set) var isConfigured = false
     @Published public private(set) var isLoading = false
@@ -86,9 +89,12 @@ public struct GateFlowOptions {
                         self.isConfigured = true
                         self.isLoading = false
                         self.configurationError = nil
+                        self.delegate?.onConfigSuccess(apiKey: apiKey)
                     case .failed(let error):
                         self.isLoading = false
                         self.configurationError = error
+                        self.delegate?.onConfigFail(error: NSError(domain: "GateFlow", code: -1,
+                            userInfo: [NSLocalizedDescriptionKey: error]))
                     case .retrieving:
                         self.isLoading = true
                     }
@@ -115,12 +121,15 @@ public struct GateFlowOptions {
         await eventTracker.track(
             GateFlowEvent(eventType: "user_identified", userId: userId)
         )
+        let attrs = identityManager.userAttributes.mapValues { ($0 as? AnyCodable)?.value ?? $0 }
+        delegate?.onUserIdentified(userId: userId, attributes: attrs)
     }
 
     /// Reset to anonymous identity.
     public func reset() {
         identityManager.reset()
         activeExperiments = [:]
+        delegate?.onUserReset()
     }
 
     /// Evaluate an experiment for a given placement.
@@ -157,17 +166,22 @@ public struct GateFlowOptions {
 
         activeExperiments[placementKey] = experiment
 
-        return expConfig.holdout == true ? .holdout(experiment) : .matched(experiment)
+        let result: ExperimentResult = expConfig.holdout == true ? .holdout(experiment) : .matched(experiment)
+        delegate?.onExperimentEvaluated(placementKey: placementKey, result: result)
+        return result
     }
 
     /// Track a custom event.
     public func track(event: GateFlowEvent) async {
         await eventTracker.track(event)
+        delegate?.onEventTracked(eventType: event.eventType)
     }
 
     /// Update user attributes.
     public func setUserAttributes(_ attributes: [String: AnyCodable]) {
         identityManager.mergeUserAttributes(attributes, shouldTrackMerge: true)
+        let rawAttrs = identityManager.userAttributes.mapValues { ($0 as? AnyCodable)?.value ?? $0 }
+        delegate?.onUserAttributesUpdated(attributes: rawAttrs)
     }
 
     /// Get current user attributes.
@@ -185,9 +199,24 @@ public struct GateFlowOptions {
         Array(activeExperiments.values)
     }
 
-    /// Preload experiments (placeholder for future paywall-like rendering).
+    /// Preload experiments for the given placement keys.
+    /// Evaluates all placements eagerly so results are available synchronously afterward.
     public func preloadExperiments(placementKeys: [String]) async {
         GFLogger.debug(level: .info, scope: .experimentManager, message: "Preload requested for \(placementKeys.count) placements")
+
+        await withTaskGroup(of: Void.self) { group in
+            for key in placementKeys {
+                group.addTask { [weak self] in
+                    guard let self = self else { return }
+                    let result = await self.evaluate(placementKey: key)
+                    GFLogger.debug(level: .debug, scope: .experimentManager,
+                        message: "Preloaded placement '\(key)': \(result)")
+                }
+            }
+        }
+
+        GFLogger.debug(level: .info, scope: .experimentManager,
+            message: "Preload complete: \(activeExperiments.count) experiments active")
     }
 
     // MARK: - Internal

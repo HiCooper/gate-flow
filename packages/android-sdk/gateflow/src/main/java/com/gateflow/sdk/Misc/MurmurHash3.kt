@@ -39,12 +39,11 @@ object MurmurHash3 {
             i += 4
         }
 
-        // Process remaining bytes
+        // Process remaining bytes (standard MurmurHash3 tail: first byte at LSB)
         var k = 0
-        var j = roundedEnd
-        while (j < offset + length) {
-            k = k shl 8 or (data[j].toInt() and 0xff)
-            j++
+        val tailLen = offset + length - roundedEnd
+        for (i in 0 until tailLen) {
+            k = k or ((data[roundedEnd + i].toInt() and 0xff) shl (i * 8))
         }
 
         if (k != 0) {

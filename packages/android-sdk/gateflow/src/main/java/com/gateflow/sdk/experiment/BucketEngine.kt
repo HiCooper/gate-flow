@@ -48,7 +48,8 @@ object BucketEngine {
     fun computeBucket(userId: String, layerId: String, salt: String): Int {
         val hashInput = "$userId#$layerId#$salt"
         val hash = MurmurHash3.hash32(hashInput)
-        return kotlin.math.abs(hash) % TOTAL_BUCKETS
+        // Use bitmask instead of abs() to avoid Integer.MIN_VALUE overflow
+        return (hash and Int.MAX_VALUE) % TOTAL_BUCKETS
     }
 
     /** Find the variant key for a given bucket number. */

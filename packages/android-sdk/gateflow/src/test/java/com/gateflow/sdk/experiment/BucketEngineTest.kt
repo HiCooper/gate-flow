@@ -1,5 +1,6 @@
 package com.gateflow.sdk.experiment
 
+import com.gateflow.sdk.misc.MurmurHash3
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -78,10 +79,11 @@ class BucketEngineTest {
 
     @Test
     fun `MurmurHash3 matches Java backend`() {
+        // Cross-platform test vector: must match Java BucketEngineTest
         val input = "user_123#layer_a#victor"
         val hash = MurmurHash3.hash32(input)
-        assertNotEquals(0, hash)
-        val bucket = kotlin.math.abs(hash) % TOTAL_BUCKETS
-        assertTrue(bucket in 0 until TOTAL_BUCKETS)
+        assertEquals(1893927761, hash, "hash must match Java backend")
+        val bucket = BucketEngine.computeBucket("user_123", "layer_a", "victor")
+        assertEquals(7761, bucket, "bucket must match Java: (hash & Int.MAX_VALUE) % 10000")
     }
 }

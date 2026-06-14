@@ -72,7 +72,8 @@ public enum BucketEngine {
     public static func computeBucket(userId: String, layerId: String, salt: String) -> Int {
         let hashInput = "\(userId)#\(layerId)#\(salt)"
         let hash = MurmurHash3.hash32(hashInput)
-        return Int(abs(hash)) % totalBuckets
+        // Use bitmask instead of abs() to avoid Int32.min overflow
+        return Int(hash & Int32.max) % totalBuckets
     }
 
     /// Find the variant key for a given bucket number.
